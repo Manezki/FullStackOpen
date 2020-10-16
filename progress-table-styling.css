@@ -1,0 +1,16 @@
+table, th, td {
+  border: 1px solid black;
+}
+
+.topic {
+  width: 6%;
+  font-size: small;
+}
+
+.checkbox {
+  width: 0.75%;
+}
+
+.empty {
+  border: 0px;
+}

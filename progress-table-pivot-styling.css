@@ -1,0 +1,40 @@
+table {
+  width: fit-content;
+  border: 1px solid black;
+}
+
+th {
+  border: 1px solid black;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.table-container {
+  width: 800px;
+  border: 1px solid black;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.topic {
+  width: 100px;
+  font-size: small;
+}
+
+.course-part {
+  width: 100px;
+}
+
+
+.checkbox {
+  align-content: center;
+}
+
+.empty {
+  border: 0px;
+}
