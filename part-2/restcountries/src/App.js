@@ -49,6 +49,35 @@ const CountryDisplay = ( {country} ) => {
   )
 }
 
+const ResultCountry = ( { country } ) => {
+
+  const [countryShown, setCountryShown] = useState(false)
+
+  return (
+    <>
+      <p>{country.name}
+        <button onClick={(e) => {
+          setCountryShown(!countryShown)
+        }}>{(countryShown) ? "Hide" : "Show"}</button>
+      </p>
+      {(countryShown) ? <CountryDisplay country={country} /> : <></>}
+    </>
+  )
+}
+
+const ResultDisplay = ( { countries } ) => {
+  return (
+    <>
+      {
+        countries
+          .map( (c) => {
+            return <ResultCountry key={c.name} country={c} />
+          })
+      }
+    </>
+  )
+}
+
 const displaySwitch = ( filteredCountries ) => {
   if (filteredCountries.length === 0) {
     return ("No country names matched the filter")
