@@ -10,20 +10,47 @@ const Query = ( { query, setQuery } ) => {
   )
 }
 
-const ResultDisplay = ( { countries } ) => {
+const WeatherDisplay = ( {weather} ) => {
+
+  if (Object.keys(weather).length === 0) {
+    return (
+      <>
+      </>
+    )
+  }
+
   return (
     <>
-      {
-        countries
-          .map( (c) => {
-            return <p key={c.name}>{c.name}</p>
-          }) 
-      }
+      <h2>Weather in {weather.location.name}</h2>
+      <p><b>Temperature</b>: {weather.current.temperature} Celcius</p>
+      <img src={weather.current.weather_icons[0]} alt={weather.current.weather_descriptions[0]} width="240" height="240"></img>
+      <p><b>Wind</b>: {weather.current.wind_speed} mph direction {weather.current.wind_dir}</p>
     </>
   )
 }
 
 const CountryDisplay = ( {country} ) => {
+
+  const [weather, setWeather] = useState({})
+
+  useEffect( () => {
+
+    const api_key = process.env.REACT_APP_API_KEY
+
+    axios
+      .get("http://api.weatherstack.com/current", {
+        params: {
+          access_key: api_key,
+          query: country.capital,
+          units: "m"
+        }
+      }).then( (response) => {
+        setWeather(response.data)
+    })
+
+    // Api key not changing during runtime
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <>
       <h1>{country.name}</h1>
@@ -45,6 +72,7 @@ const CountryDisplay = ( {country} ) => {
       </ul>
 
       <img src={country.flag} alt={"Flag of " + country.name} width="360" height="240"></img>
+      <WeatherDisplay weather={weather} />
     </>
   )
 }
