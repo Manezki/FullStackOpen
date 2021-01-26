@@ -1,9 +1,23 @@
 import React from "react";
 import Contact from "./Contact";
+import * as contactService from "../services/contacts";
 
-const Contacts = ( {persons, searchState} ) => {
+const Contacts = ( {persons, setPersons, searchState} ) => {
     const slice = searchState.length
-  
+
+    const deleteHandlerFactory = (person) => {
+      return ( event ) => {
+
+        if (window.confirm("Remove " + person.name + " from contacts?")) {
+            contactService.remove(person.id)
+            .then( () => {
+              setPersons(persons.filter( (p) => p.id !== person.id))
+            })
+          }
+
+        }
+    }
+
     const filteredPersons = (slice !== 0)
       ? persons.filter( (person) => {
           return person.name.toLowerCase().includes(searchState.toLowerCase())
@@ -20,7 +34,7 @@ const Contacts = ( {persons, searchState} ) => {
           </thead>
           <tbody>
             {filteredPersons.map( (person) => {
-              return <Contact key={person.name} name={person.name} number={person.number} />
+              return <Contact key={person.name} name={person.name} number={person.number} deleteHandler={deleteHandlerFactory(person)} />
             } )}
           </tbody>
         </table>

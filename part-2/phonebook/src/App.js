@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import Search from "./components/Search";
 import Contacts from "./components/Contacts";
 import NewContactForm from "./components/NewContactForm";
-
-import axios from "axios";
+import * as contactService from "./services/contacts";
 
 const App = () => {
   const [ persons, setPersons ] = useState([])
@@ -12,13 +11,13 @@ const App = () => {
   const [ searchState, setSearchState ] = useState('')
 
   useEffect( () => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then( (response) => {
+    contactService
+      .getAll()
+      .then( (contacts) => {
 
-        // Prevent duplicate entries in the contacts
-        const checkUpSet = new Set(persons.map(p => p.name))
-        const newPersons = [...persons].concat(response.data.filter(p => !checkUpSet.has(p.name)))
+        // Prevent duplicate entries in the contacts. Priority on serverside contacts
+        const checkUpSet = new Set(contacts.map(p => p.name))
+        const newPersons = [...contacts].concat(persons.filter(p => !checkUpSet.has(p.name)))
         setPersons(newPersons)
         
       })
@@ -36,12 +35,16 @@ const App = () => {
       alert(`${newName} is already added to phonebook`)
     
     } else {
-      
-      setPersons(
-        persons.concat([{name: newName, number: newNumber}])
-      )
-      setNewName("")
-      setNewNumber("")
+
+      contactService
+        .create({name: newName, number: newNumber})
+        .then( (contact) => {
+          setPersons(
+            persons.concat([contact])
+          )
+          setNewName("")
+          setNewNumber("")
+        })
     
     }
   }
@@ -58,7 +61,7 @@ const App = () => {
       <NewContactForm ccName={newName} ccNumber={newNumber}
         handleName={handleChange(setNewName)} handleNumber={handleChange(setNewNumber)}
         handleSubmit={handleSubmit} />
-      <Contacts persons={persons} searchState={searchState}/>
+      <Contacts persons={persons} setPersons={setPersons} searchState={searchState}/>
     </div>
   )
 }
