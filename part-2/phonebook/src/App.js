@@ -11,6 +11,7 @@ const App = () => {
   const [ newNumber, setNewNumber] = useState('')
   const [ searchState, setSearchState ] = useState('')
   const [ notifications, setNotifications ] = useState([])
+  const [ notificationTimeOuts, setNotificationTimeOuts ] = useState([])
 
   useEffect( () => {
     contactService
@@ -26,43 +27,28 @@ const App = () => {
     // Run only on first render, so keeping the dependencies empty
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Well this does not exactly work. Multiple notifications are cleared simultaneously
-  // Might be possible to work around with clearTimeout
   const notify = (notification) => {
 
-    const recentNotification = notifications[notifications.length - 1]
+    const timeOutIDs = notifications.concat(notification).reverse()
+      .reduce( (collector, lastNotif) => {
 
-    if (recentNotification) {
-      if (notification.created - recentNotification.created >= 5000) {
+        const notificationsToKeep = collector.map( (pair) => pair.notif )
+        const timeOutTiming = 5000 - (notification.created - lastNotif.created)
 
-        // Take the opportunity to flush the list
-        setNotifications(([notification]))
+        const timeOut = setTimeout( () => {
+          setNotifications(notificationsToKeep)
+        }, timeOutTiming)
 
-        setTimeout( () => {
-          setNotifications(notifications.map( (notif) => {
-            return notif.created !== notification.created ? notif : {...notif, "isStale": true}
-          }))
-        }, 5000)
+        return collector.concat({"notif": lastNotif, "timeOut": timeOut})
 
-      } else {
+      }, [] )
+      .map( (el) => el.timeOut)
 
-        setNotifications(notifications.concat([notification]))
+    // Set States
+    notificationTimeOuts.map( (timeOutID) => clearTimeout(timeOutID))
+    setNotificationTimeOuts(timeOutIDs)
+    setNotifications(notifications.concat(notification))
 
-        setTimeout( () => {
-          const futureNotificationState = {...notification, "isStale": true}
-
-          setNotifications(notifications.concat([futureNotificationState]))
-        }, notification.created - recentNotification)
-
-      }
-
-    } else {
-        setNotifications(([notification]))
-
-        setTimeout( () => {
-          setNotifications([{...notification, "isStale": true}])
-        }, 5000)
-    }
   }
 
   const handleSubmit = (event) => {
@@ -90,8 +76,7 @@ const App = () => {
               const notification = {
                 "type": "success",
                 "msg": `Number updated for ${newName}!`,
-                "created": Date.now(),
-                "isStale": false
+                "created": Date.now()
               }
 
               notify(notification)
@@ -109,8 +94,7 @@ const App = () => {
                 const notification = {
                   "type": "error",
                   "msg": `${contactName} was deleted on the server.`,
-                  "created": Date.now(),
-                  "isStale": false
+                  "created": Date.now()
                 }
                 notify(notification)
 
@@ -132,8 +116,7 @@ const App = () => {
           const notification = {
             "type": "success",
             "msg": `${newName} added to phonebook!`,
-            "created": Date.now(),
-            "isStale": false
+            "created": Date.now()
           }
 
           notify(notification)
@@ -152,7 +135,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      {notifications.filter( (notif) => Date.now() - notif.created <= 5000).map( (notif) => <Notification notification={notif} key={notif.created}/>)}
+      {notifications.map( (notif) => <Notification notification={notif} key={notif.created}/>)}
       <Search state={searchState} setter={setSearchState}/>
       <h2>Add a new entry</h2>
       <NewContactForm ccName={newName} ccNumber={newNumber}
