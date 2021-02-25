@@ -100,6 +100,15 @@ const App = () => {
 
                 setPersons(persons.filter( (p) => p.name !== contactName))
 
+              } else if (error.response.status === 400) {
+
+                const notification = {
+                  "type": "error",
+                  "msg": error.response.data.error,
+                  "created": Date.now()
+                }
+                notify(notification)
+
               }
             })
         }
@@ -123,6 +132,19 @@ const App = () => {
 
           setNewName("")
           setNewNumber("")
+        })
+        .catch( error => {
+
+          if (error.response.status === 400) {
+
+            const notification = {
+              "type": "error",
+              "msg": error.response.data.error,
+              "created": Date.now()
+            }
+            notify(notification)
+
+          }
         })
     
     }
