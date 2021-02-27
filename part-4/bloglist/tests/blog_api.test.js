@@ -24,7 +24,7 @@ describe("/api/blogs", () => {
     expect(response.body).toHaveLength(helper.initialBlogs.length)
   })
 
-  test("returns a blog with known title", async () => {
+  test("returns a blog with a known title", async () => {
     let response = await api
       .get("/api/blogs")
       .expect(200)
@@ -33,6 +33,119 @@ describe("/api/blogs", () => {
     response = response.body.map((blog) => blog.title)
 
     expect(response).toContain("Type wars")
+  })
+
+  test("blogs have an id", async () => {
+    const response = await api
+      .get("/api/blogs")
+      .expect(200)
+      .expect("Content-Type", new RegExp("application/json"))
+
+    expect(response.body[0].id).toBeDefined()
+  })
+
+  test("blogs do not have an _id nor __v", async () => {
+    const response = await api
+      .get("/api/blogs")
+      .expect(200)
+      .expect("Content-Type", new RegExp("application/json"))
+
+    expect(Object.keys(response.body[0])).not.toContain("_id")
+    expect(Object.keys(response.body[0])).not.toContain("__v")
+  })
+
+  describe("post methods", () => {
+    test("accepts a valid blog", async () => {
+      const newBlog = {
+        title: "Improve your remote work results by being smart",
+        author: "Manezki",
+        url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+        likes: 42,
+      }
+
+      await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const dbContent = await helper.blogsInDb()
+
+      expect(dbContent).toHaveLength(helper.initialBlogs.length + 1)
+    })
+
+    test("correctly saves the title, author, url, and likes", async () => {
+      const newBlog = {
+        title: "Improve your remote work results by being smart",
+        author: "Manezki",
+        url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+        likes: 42,
+      }
+
+      await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      let dbContent = await helper.blogsInDb()
+      dbContent = dbContent.map(({ id, ...blog }) => blog)
+
+      expect(dbContent).toContainEqual(newBlog)
+    })
+
+    test("new blogs default to 0 likes", async () => {
+      const newBlog = {
+        title: "Improve your remote work results by being smart",
+        author: "Manezki",
+        url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+      }
+
+      await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      let dbContent = await helper.blogsInDb()
+      dbContent = dbContent.map(({ id, ...blog }) => blog)
+
+      newBlog.likes = 0
+
+      expect(dbContent).toContainEqual(newBlog)
+    })
+
+    test("title and url are required for new blogs", async () => {
+      const newBlog = {
+        author: "Manezki",
+        likes: 0,
+      }
+
+      await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(400)
+    })
+  })
+
+  describe("delete method", () => {
+    test("deletes a valid id", async () => {
+      const preDeleteDbContent = await helper.blogsInDb()
+
+      await api
+        .del(`/api/blogs/${preDeleteDbContent[0].id}`)
+        .expect(204)
+
+      const postDeleteDbContent = await helper.blogsInDb()
+
+      expect(postDeleteDbContent).toHaveLength(preDeleteDbContent.length - 1)
+    })
+
+    test("returns a 204 for missing id", async () => {
+      await api
+        .del("/api/blogs/a123")
+        .expect(204)
+    })
   })
 })
 
