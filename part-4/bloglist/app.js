@@ -7,8 +7,6 @@ const blogsRouter = require("./controllers/blogs")
 
 const app = express()
 
-logger.info(config)
-
 mongoose.connect(config.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,

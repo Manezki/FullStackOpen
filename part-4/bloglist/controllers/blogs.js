@@ -11,7 +11,7 @@ blogsRouter.post("/", async (request, response) => {
     title: request.body.title,
     author: request.body.author,
     url: request.body.url,
-    likes: request.body.likes || 0,
+    likes: request.body.likes,
   })
 
   try {
@@ -30,6 +30,27 @@ blogsRouter.delete("/:id", async (request, response) => {
     response.status(204).send()
   } catch (CastError) {
     response.status(204).send()
+  }
+})
+
+blogsRouter.put("/:id", async (request, response) => {
+  const { id } = request.params
+
+  if (request.body.title && request.body.url) {
+    try {
+      const result = await Blog.findByIdAndUpdate(
+        id, request.body, { new: true, runValidators: true },
+      )
+      response.json(result)
+    } catch (error) {
+      if (error.name === "CastError") {
+        response.status(400).json({ error: "invalid id" })
+      } else if (error.name === "ValidationError") {
+        response.status(400).json({ error: error.message })
+      }
+    }
+  } else {
+    response.status(400).json({ error: "Title and URL required" })
   }
 })
 

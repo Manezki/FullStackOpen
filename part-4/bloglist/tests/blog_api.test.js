@@ -147,6 +147,35 @@ describe("/api/blogs", () => {
         .expect(204)
     })
   })
+
+  describe("put method", () => {
+    test("correctly updates likes on a blog", async () => {
+      const content = await helper.blogsInDb()
+
+      const contentCopy = { ...content[0] }
+      contentCopy.likes += 1
+
+      const response = await api
+        .put(`/api/blogs/${contentCopy.id}`)
+        .send(contentCopy)
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body.likes).toBe(content[0].likes + 1)
+    })
+
+    test("refuses updates without title or url", async () => {
+      const content = await helper.blogsInDb()
+
+      const mutilatedContent = content.map(({ title, url, ...elem }) => elem)[0]
+
+      await api
+        .put(`/api/blogs/${mutilatedContent.id}`)
+        .send(mutilatedContent)
+        .expect(400)
+        .expect("Content-Type", new RegExp("application/json"))
+    })
+  })
 })
 
 afterAll(() => {
