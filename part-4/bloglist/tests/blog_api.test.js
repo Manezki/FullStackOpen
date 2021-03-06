@@ -1,20 +1,21 @@
 const mongoose = require("mongoose")
 const supertest = require("supertest")
+const bcrypt = require("bcrypt")
 const app = require("../app")
 const Blog = require("../models/blog")
+const User = require("../models/user")
 const helper = require("./test_helper")
 
 const api = supertest(app)
 
-beforeEach(async () => {
-  await Blog.deleteMany({})
-
-  const initialBlogs = helper.initialBlogs.map((blog) => new Blog(blog))
-  const promises = initialBlogs.map((blog) => blog.save())
-  await Promise.all(promises)
-})
-
 describe("/api/blogs", () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+
+    const initialBlogs = helper.initialBlogs.map((blog) => new Blog(blog))
+    const promises = initialBlogs.map((blog) => blog.save())
+    await Promise.all(promises)
+  })
   test("returns correct amount of blogs", async () => {
     const response = await api
       .get("/api/blogs")
@@ -178,6 +179,62 @@ describe("/api/blogs", () => {
   })
 })
 
-afterAll(() => {
-  mongoose.connection.close()
+describe("/api/users", () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const users = [
+      new User({
+        name: "manezki",
+        username: "manezki",
+        passwordHash: await bcrypt.hash("12345", 8),
+      }),
+      new User({
+        name: "eva",
+        username: "eva",
+        passwordHash: await bcrypt.hash("67890", 8),
+      }),
+    ]
+
+    await Promise.all(users.map((user) => user.save()))
+  })
+
+  describe("post method", () => {
+    test("an unique username is correctly accepted", async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        name: "manezki",
+        username: "man3zki",
+        password: 12345,
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const usersAtEnd = await helper.usersInDb()
+
+      expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+      expect(JSON.stringify(usersAtEnd)).toContain("eva")
+    })
+  })
+
+  describe("get method", () => {
+    test("should correctly return saved users", async () => {
+      const response = await api
+        .get("/api/users")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body).toHaveLength(2)
+      expect(response.body.map((user) => user.username)).toContain("manezki")
+    })
+  })
+})
+
+afterAll(async () => {
+  await mongoose.connection.close()
 })
