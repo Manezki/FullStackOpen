@@ -144,7 +144,7 @@ describe("/api/blogs", () => {
 
     test("returns a 204 for missing id", async () => {
       await api
-        .del("/api/blogs/a123")
+        .del("/api/blogs/603d48a76291e97b35973e01")
         .expect(204)
     })
   })
