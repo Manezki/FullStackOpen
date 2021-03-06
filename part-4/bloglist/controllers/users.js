@@ -3,6 +3,19 @@ const bcypt = require("bcrypt")
 const User = require("../models/user")
 
 usersRouter.post("/", async (request, response, next) => {
+  // bcrypt accepts undefined input, so validate password presence manually
+  if (typeof request.body.password === "undefined") {
+    next({
+      name: "ValidationError",
+      message: "password has to be provided.",
+    })
+  } else if (String(request.body.password).length < 3) {
+    next({
+      name: "ValidationError",
+      message: "password has to be at least 3 characters long.",
+    })
+  }
+
   const newUser = new User({
     name: request.body.name,
     username: request.body.username,

@@ -200,7 +200,7 @@ describe("/api/users", () => {
   })
 
   describe("post method", () => {
-    test("an unique username is correctly accepted", async () => {
+    test("accepts an unique username", async () => {
       const usersAtStart = await helper.usersInDb()
 
       const newUser = {
@@ -219,6 +219,99 @@ describe("/api/users", () => {
 
       expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
       expect(JSON.stringify(usersAtEnd)).toContain("eva")
+    })
+
+    test("refutes a duplicate username", async () => {
+      const newUser = {
+        name: "APSD",
+        username: "manezki",
+        password: 23456,
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(400)
+    })
+
+    test("refutes usernames shorter than 3 characters", async () => {
+      const newUser = {
+        name: "manezki",
+        username: "A",
+        password: 12345,
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(400)
+    })
+
+    test("accepts usernames at least 3 characters long", async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        name: "manezki",
+        username: "JFL",
+        password: 12345,
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const usersAtEnd = await helper.usersInDb()
+
+      expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+      expect(usersAtEnd.map((user) => user.username)).toContain("JFL")
+    })
+
+    test("refutes passwords shorter than 3 characters", async () => {
+      const newUser = {
+        name: "newUser",
+        username: "newUser",
+        password: 12,
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(400)
+    })
+
+    test("refutes users without password", async () => {
+      const newUser = {
+        name: "newUser",
+        username: "newUser",
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(400)
+    })
+
+    test("accepts passwords at least 3 characters long", async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        name: "newUser",
+        username: "DHS",
+        password: 123,
+      }
+
+      await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const usersAtEnd = await helper.usersInDb()
+
+      expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+      expect(usersAtEnd.map((user) => user.username)).toContain("DHS")
     })
   })
 
