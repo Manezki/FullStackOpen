@@ -394,6 +394,70 @@ describe("/api/users", () => {
   })
 })
 
+describe("/api/login", () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const users = [
+      new User({
+        name: "manezki",
+        username: "manezki",
+        passwordHash: await bcrypt.hash("12345", 8),
+      }),
+      new User({
+        name: "eva",
+        username: "eva",
+        passwordHash: await bcrypt.hash("67890", 8),
+      }),
+    ]
+
+    await Promise.all(users.map((user) => user.save()))
+  })
+
+  describe("post method", () => {
+    test("accepts correct username password combination", async () => {
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "manezki",
+          password: 12345,
+        })
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body.token).toBeDefined()
+      expect(response.body.username).toBe("manezki")
+      expect(response.body.name).toBe("manezki")
+    })
+
+    test("rejects incorrect password for existing username", async () => {
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "manezki",
+          password: 13579,
+        })
+        .expect(401)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body.token).not.toBeDefined()
+    })
+
+    test("rejects password of wrong user", async () => {
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "manezki",
+          password: 67890,
+        })
+        .expect(401)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body.token).not.toBeDefined()
+    })
+  })
+})
+
 afterAll(async () => {
   await mongoose.connection.close()
 })
