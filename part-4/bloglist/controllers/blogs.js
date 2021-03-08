@@ -1,6 +1,8 @@
+const jwt = require("jsonwebtoken")
 const blogsRouter = require("express").Router()
 const Blog = require("../models/blog")
 const User = require("../models/user")
+const config = require("../utils/config")
 
 blogsRouter.get("/", async (request, response, next) => {
   try {
@@ -13,22 +15,31 @@ blogsRouter.get("/", async (request, response, next) => {
 
 blogsRouter.post("/", async (request, response, next) => {
   try {
-    const randomUser = await User.findOne({})
+    const token = request.body.token ? request.body.token : ""
+    const decodedToken = jwt.verify(token, config.TOKEN_SECRET)
 
-    const blog = new Blog({
-      title: request.body.title,
-      author: request.body.author,
-      url: request.body.url,
-      likes: request.body.likes,
-      user: randomUser._id, // eslint-disable-line
-    })
+    if (!request.body.token || !decodedToken.id) {
+      response.status(401).json({
+        error: "Token missing or invalid",
+      })
+    } else {
+      const user = await User.findById(decodedToken.id)
 
-    const result = await blog.save()
+      const blog = new Blog({
+        title: request.body.title,
+        author: request.body.author,
+        url: request.body.url,
+        likes: request.body.likes,
+        user: user._id, // eslint-disable-line
+      })
 
-    randomUser.blogs = randomUser.blogs.concat([result._id]) // eslint-disable-line
+      const result = await blog.save()
 
-    await randomUser.save()
-    response.status(201).json(result)
+      user.blogs = user.blogs.concat([result._id]) // eslint-disable-line
+
+      await user.save()
+      response.status(201).json(result)
+    }
   } catch (error) {
     next(error)
   }

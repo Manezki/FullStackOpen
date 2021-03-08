@@ -9,67 +9,92 @@ const helper = require("./test_helper")
 const api = supertest(app)
 
 describe("/api/blogs", () => {
-  beforeEach(async () => {
-    await Blog.deleteMany({})
-    await User.deleteMany({})
+  describe("GET methods", () => {
+    beforeEach(async () => {
+      await Blog.deleteMany({})
+      await User.deleteMany({})
 
-    const initialUser = {
-      name: "manezki",
-      username: "manezki",
-      passwordHash: await bcrypt.hash(String(12345), 8),
-    }
+      const initialUser = {
+        name: "manezki",
+        username: "manezki",
+        passwordHash: await bcrypt.hash(String(12345), 8),
+      }
 
-    const userResponse = await new User(initialUser).save()
+      const userResponse = await new User(initialUser).save()
 
-    const initialBlogs = helper.initialBlogs.map((blog) => {
-      blog.user = userResponse._id // eslint-disable-line
-      return new Blog(blog)
+      const initialBlogs = helper.initialBlogs.map((blog) => {
+        blog.user = userResponse._id // eslint-disable-line
+        return new Blog(blog)
+      })
+
+      const blogPromises = initialBlogs.map((blog) => blog.save())
+      await Promise.all(blogPromises)
     })
 
-    const blogPromises = initialBlogs.map((blog) => blog.save())
-    await Promise.all(blogPromises)
+    test("returns correct amount of blogs", async () => {
+      const response = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body).toHaveLength(helper.initialBlogs.length)
+    })
+
+    test("returns a blog with a known title", async () => {
+      let response = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      response = response.body.map((blog) => blog.title)
+
+      expect(response).toContain("Type wars")
+    })
+
+    test("blogs have an id", async () => {
+      const response = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(response.body[0].id).toBeDefined()
+    })
+
+    test("blogs do not have an _id nor __v", async () => {
+      const response = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      expect(Object.keys(response.body[0])).not.toContain("_id")
+      expect(Object.keys(response.body[0])).not.toContain("__v")
+    })
   })
 
-  test("returns correct amount of blogs", async () => {
-    const response = await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect("Content-Type", new RegExp("application/json"))
+  describe("POST methods", () => {
+    let loggedInUser
+    beforeEach(async () => {
+      await Blog.deleteMany({})
+      await User.deleteMany({})
 
-    expect(response.body).toHaveLength(helper.initialBlogs.length)
-  })
+      const initialUser = {
+        name: "manezki",
+        username: "manezki",
+        passwordHash: await bcrypt.hash(String(12345), 8),
+      }
 
-  test("returns a blog with a known title", async () => {
-    let response = await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect("Content-Type", new RegExp("application/json"))
+      await new User(initialUser).save()
 
-    response = response.body.map((blog) => blog.title)
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "manezki",
+          password: 12345,
+        })
 
-    expect(response).toContain("Type wars")
-  })
+      loggedInUser = response.body
+    })
 
-  test("blogs have an id", async () => {
-    const response = await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect("Content-Type", new RegExp("application/json"))
-
-    expect(response.body[0].id).toBeDefined()
-  })
-
-  test("blogs do not have an _id nor __v", async () => {
-    const response = await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect("Content-Type", new RegExp("application/json"))
-
-    expect(Object.keys(response.body[0])).not.toContain("_id")
-    expect(Object.keys(response.body[0])).not.toContain("__v")
-  })
-
-  describe("post methods", () => {
     test("accepts a valid blog", async () => {
       const newBlog = {
         title: "Improve your remote work results by being smart",
@@ -80,13 +105,14 @@ describe("/api/blogs", () => {
 
       await api
         .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", new RegExp("application/json"))
 
       const dbContent = await helper.blogsInDb()
 
-      expect(dbContent).toHaveLength(helper.initialBlogs.length + 1)
+      expect(dbContent).toHaveLength(1)
     })
 
     test("correctly saves the title, author, url, and likes", async () => {
@@ -99,6 +125,7 @@ describe("/api/blogs", () => {
 
       await api
         .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", new RegExp("application/json"))
@@ -119,6 +146,7 @@ describe("/api/blogs", () => {
 
       await api
         .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", new RegExp("application/json"))
@@ -131,7 +159,7 @@ describe("/api/blogs", () => {
       expect(dbContent).toContainEqual(newBlog)
     })
 
-    test("new blogs have the creating user set", async () => {
+    test("new blogs have a creating user set", async () => {
       const newBlog = {
         title: "Improve your remote work results by being smart",
         author: "Manezki",
@@ -141,6 +169,7 @@ describe("/api/blogs", () => {
 
       const response = await api
         .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", new RegExp("application/json"))
@@ -149,6 +178,25 @@ describe("/api/blogs", () => {
 
       expect(dbContent[0].user).toBeDefined()
       expect(response.body.user).toBeDefined()
+    })
+
+    test("created blogs have the logged-in user as the creator user", async () => {
+      const newBlog = {
+        title: "Improve your remote work results by being smart",
+        author: "Manezki",
+        url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+        likes: 42,
+      }
+
+      const response = await api
+        .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const creator = await User.findOne({ id: response.id })
+      expect(creator.username).toBe(loggedInUser.username)
     })
 
     test("new blogs are appended to the user's blogs", async () => {
@@ -163,6 +211,7 @@ describe("/api/blogs", () => {
 
       const blogResponse = await api
         .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", new RegExp("application/json"))
@@ -173,6 +222,37 @@ describe("/api/blogs", () => {
         .blogs.length + 1)
     })
 
+    test("accepts blogs if user token is provided", async () => {
+      const newBlog = {
+        title: "Improve your remote work results by being smart",
+        author: "Manezki",
+        url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+        likes: 42,
+      }
+
+      await api
+        .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", new RegExp("application/json"))
+    })
+
+    test("rejects blogs if user token is NOT provided", async () => {
+      const newBlog = {
+        title: "Improve your remote work results by being smart",
+        author: "Manezki",
+        url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+        likes: 42,
+      }
+
+      await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(401)
+        .expect("Content-Type", new RegExp("application/json"))
+    })
+
     test("title and url are required for new blogs", async () => {
       const newBlog = {
         author: "Manezki",
@@ -181,12 +261,34 @@ describe("/api/blogs", () => {
 
       await api
         .post("/api/blogs")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(400)
     })
   })
 
-  describe("delete method", () => {
+  describe("DELETE method", () => {
+    beforeEach(async () => {
+      await Blog.deleteMany({})
+      await User.deleteMany({})
+
+      const initialUser = {
+        name: "manezki",
+        username: "manezki",
+        passwordHash: await bcrypt.hash(String(12345), 8),
+      }
+
+      const userResponse = await new User(initialUser).save()
+
+      const initialBlogs = helper.initialBlogs.map((blog) => {
+        blog.user = userResponse._id // eslint-disable-line
+        return new Blog(blog)
+      })
+
+      const blogPromises = initialBlogs.map((blog) => blog.save())
+      await Promise.all(blogPromises)
+    })
+
     test("deletes a valid id", async () => {
       const preDeleteDbContent = await helper.blogsInDb()
 
@@ -206,7 +308,28 @@ describe("/api/blogs", () => {
     })
   })
 
-  describe("put method", () => {
+  describe("PUT method", () => {
+    beforeEach(async () => {
+      await Blog.deleteMany({})
+      await User.deleteMany({})
+
+      const initialUser = {
+        name: "manezki",
+        username: "manezki",
+        passwordHash: await bcrypt.hash(String(12345), 8),
+      }
+
+      const userResponse = await new User(initialUser).save()
+
+      const initialBlogs = helper.initialBlogs.map((blog) => {
+        blog.user = userResponse._id // eslint-disable-line
+        return new Blog(blog)
+      })
+
+      const blogPromises = initialBlogs.map((blog) => blog.save())
+      await Promise.all(blogPromises)
+    })
+
     test("correctly updates likes on a blog", async () => {
       const content = await helper.blogsInDb()
 
