@@ -47,16 +47,36 @@ blogsRouter.post("/", async (request, response, next) => {
 
 blogsRouter.delete("/:id", async (request, response, next) => {
   const { id } = request.params
+  const token = request.body.token ? request.body.token : ""
 
   try {
-    await Blog.findByIdAndRemove(id)
-    response.status(204).send()
+    const decodedToken = jwt.verify(token, config.TOKEN_SECRET)
+
+    if (!request.body.token || !decodedToken.id) {
+      response.status(401).json({
+        error: "Token missing or invalid",
+      })
+    } else {
+      const blogToDelete = await Blog.findById(id)
+
+      if (!blogToDelete) {
+        response.status(204).send()
+      } else if (blogToDelete.user.toString() === decodedToken.id) {
+        await Blog.findByIdAndRemove(id)
+        response.status(204).send()
+      } else {
+        response.status(401).json({
+          error: "Only the creator of the blog may delete it",
+        })
+      }
+    }
   } catch (error) {
     next(error)
   }
 })
 
 blogsRouter.put("/:id", async (request, response, next) => {
+  // TODO The put method should be locked behind log-in
   const { id } = request.params
 
   if (!request.body.title || !request.body.url) {

@@ -268,6 +268,7 @@ describe("/api/blogs", () => {
   })
 
   describe("DELETE method", () => {
+    let loggedInUser
     beforeEach(async () => {
       await Blog.deleteMany({})
       await User.deleteMany({})
@@ -279,6 +280,15 @@ describe("/api/blogs", () => {
       }
 
       const userResponse = await new User(initialUser).save()
+
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "manezki",
+          password: 12345,
+        })
+
+      loggedInUser = response.body
 
       const initialBlogs = helper.initialBlogs.map((blog) => {
         blog.user = userResponse._id // eslint-disable-line
@@ -294,6 +304,7 @@ describe("/api/blogs", () => {
 
       await api
         .del(`/api/blogs/${preDeleteDbContent[0].id}`)
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .expect(204)
 
       const postDeleteDbContent = await helper.blogsInDb()
@@ -304,7 +315,63 @@ describe("/api/blogs", () => {
     test("returns a 204 for missing id", async () => {
       await api
         .del("/api/blogs/603d48a76291e97b35973e01")
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .expect(204)
+    })
+
+    test("rejects DELETE request from users that are not the creator of the blog", async () => {
+      const secondaryUser = {
+        name: "eva",
+        username: "eva",
+        passwordHash: await bcrypt.hash(String(67890), 8),
+      }
+
+      await new User(secondaryUser).save()
+
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "eva",
+          password: 67890,
+        })
+
+      const secondaryLoggedIn = response.body
+
+      const dbBlogs = await helper.blogsInDb()
+
+      await api
+        .del(`/api/blogs/${dbBlogs[0].id}`)
+        .set("Authorization", `bearer ${secondaryLoggedIn.token}`)
+        .expect(401)
+
+      const afterDelete = await helper.blogsInDb()
+
+      expect(afterDelete).toHaveLength(dbBlogs.length)
+    })
+
+    test("accepts DELETEs from the blog creator", async () => {
+      const contentOnStart = await helper.blogsInDb()
+
+      await api
+        .del(`/api/blogs/${contentOnStart[0].id}`)
+        .set("Authorization", `bearer ${loggedInUser.token}`)
+        .expect(204)
+
+      const contentAtEnd = await helper.blogsInDb()
+
+      expect(contentAtEnd).toHaveLength(contentOnStart.length - 1)
+    })
+
+    test("returns unauthorized if no token is provided", async () => {
+      const contentOnStart = await helper.blogsInDb()
+
+      await api
+        .del(`/api/blogs/${contentOnStart[0].id}`)
+        .expect(401)
+
+      const contentAtEnd = await helper.blogsInDb()
+
+      expect(contentAtEnd).toHaveLength(contentOnStart.length)
     })
   })
 
