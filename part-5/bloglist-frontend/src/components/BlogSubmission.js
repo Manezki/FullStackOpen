@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import blogService from "./../services/blogs"
 
 
-const Blogsubmission = ({ user, blogs, setBlogs }) => {
+const Blogsubmission = ({ user, blogs, setBlogs, addNotification }) => {
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [url, setUrl] = useState("")
@@ -13,7 +13,6 @@ const Blogsubmission = ({ user, blogs, setBlogs }) => {
     const {title, author, url} = event.target
     
     try {
-      console.log(user);
       const response = await blogService.create(
         {
           title: title.value,
@@ -23,8 +22,16 @@ const Blogsubmission = ({ user, blogs, setBlogs }) => {
       
       setBlogs(blogs.concat([response]))
 
+      addNotification({
+        type: "success",
+        message: `A new blog ${response.title} by ${response.author} added`,
+      })
+
     } catch (error) {
-      console.log(error.message);
+      addNotification({
+        type: "error",
+        message: error.message,
+      })
     }
   }
 

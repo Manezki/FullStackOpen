@@ -1,0 +1,14 @@
+.notification {
+    margin: 0.5% 0.5%;
+    padding: 5px 15px;
+    background-color: lightgray;
+    border: 3px solid gray;
+    border-radius: 15px;
+}
+
+#error {
+    color: lightcoral;
+}
+
+#success {
+    color: green;

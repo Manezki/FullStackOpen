@@ -3,7 +3,7 @@ import Login from "./../services/login"
 import blogService from "./../services/blogs"
 
 
-const LoginForm = ({ setUser }) => {
+const LoginForm = ({ setUser, addNotification }) => {
   
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -11,17 +11,20 @@ const LoginForm = ({ setUser }) => {
   const handleLogin = async (event) => {
     event.preventDefault()
     
-    try {
-      const user = await Login.login({
-        username, password
-      })
-      
+    Login.login({
+      username, password
+    })
+    .then((user) => {
       setUser(user)
       blogService.setToken(user.token)
       window.localStorage.setItem("user", JSON.stringify(user))
-    } catch (error) {
-      console.log(error.message)
-    }
+    })
+    .catch((reason) => {
+      addNotification({
+        type: "error",
+        message: reason.response.data.error,
+      })
+    })
   }
 
   return (
