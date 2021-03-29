@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import blogService from "./../services/blogs"
 
 
-const Blogsubmission = ({ user, blogs, setBlogs, addNotification }) => {
+const Blogsubmission = ({ blogs, setBlogs, addNotification, blogFormRef }) => {
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [url, setUrl] = useState("")
@@ -26,6 +26,8 @@ const Blogsubmission = ({ user, blogs, setBlogs, addNotification }) => {
         type: "success",
         message: `A new blog ${response.title} by ${response.author} added`,
       })
+
+      blogFormRef.current.setVisibility()
 
     } catch (error) {
       addNotification({
