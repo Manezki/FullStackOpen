@@ -647,6 +647,7 @@ describe("/api/login", () => {
       expect(response.body.token).toBeDefined()
       expect(response.body.username).toBe("manezki")
       expect(response.body.name).toBe("manezki")
+      expect(response.body.id).toBeDefined()
     })
 
     test("rejects incorrect password for existing username", async () => {
