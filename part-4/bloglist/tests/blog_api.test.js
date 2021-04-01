@@ -376,6 +376,7 @@ describe("/api/blogs", () => {
   })
 
   describe("PUT method", () => {
+    let loggedInUser
     beforeEach(async () => {
       await Blog.deleteMany({})
       await User.deleteMany({})
@@ -395,6 +396,15 @@ describe("/api/blogs", () => {
 
       const blogPromises = initialBlogs.map((blog) => blog.save())
       await Promise.all(blogPromises)
+
+      const response = await api
+        .post("/api/login")
+        .send({
+          username: "manezki",
+          password: 12345,
+        })
+
+      loggedInUser = response.body
     })
 
     test("correctly updates likes on a blog", async () => {
@@ -405,11 +415,29 @@ describe("/api/blogs", () => {
 
       const response = await api
         .put(`/api/blogs/${contentCopy.id}`)
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(contentCopy)
         .expect(200)
         .expect("Content-Type", new RegExp("application/json"))
 
       expect(response.body.likes).toBe(content[0].likes + 1)
+    })
+
+    test("refuses updates without log-in token", async () => {
+      const content = await helper.blogsInDb()
+
+      const contentCopy = { ...content[0] }
+      contentCopy.likes += 1
+
+      await api
+        .put(`/api/blogs/${contentCopy.id}`)
+        .send(contentCopy)
+        .expect(401)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const blogsAtEnd = await helper.blogsInDb()
+
+      expect(blogsAtEnd[0].likes).toBe(content[0].likes)
     })
 
     test("refuses updates without title or url", async () => {
@@ -419,6 +447,7 @@ describe("/api/blogs", () => {
 
       await api
         .put(`/api/blogs/${mutilatedContent.id}`)
+        .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(mutilatedContent)
         .expect(400)
         .expect("Content-Type", new RegExp("application/json"))

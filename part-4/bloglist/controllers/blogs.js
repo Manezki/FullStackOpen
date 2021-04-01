@@ -76,18 +76,26 @@ blogsRouter.delete("/:id", async (request, response, next) => {
 })
 
 blogsRouter.put("/:id", async (request, response, next) => {
-  // TODO The put method should be locked behind log-in
-  const { id } = request.params
-
-  if (!request.body.title || !request.body.url) {
-    response.status(400).json({ error: "Title and URL required" })
-  }
-
   try {
-    const result = await Blog.findByIdAndUpdate(
-      id, request.body, { new: true, runValidators: true },
-    )
-    response.json(result)
+    const token = request.body.token ? request.body.token : ""
+    const decodedToken = jwt.verify(token, config.TOKEN_SECRET)
+
+    if (!request.body.token || !decodedToken.id) {
+      response.status(401).json({
+        error: "Token missing or invalid",
+      })
+    } else {
+      const { id } = request.params
+
+      if (!request.body.title || !request.body.url) {
+        response.status(400).json({ error: "Title and URL required" })
+      }
+
+      const result = await Blog.findByIdAndUpdate(
+        id, request.body, { new: true, runValidators: true },
+      )
+      response.json(result)
+    }
   } catch (error) {
     next(error)
   }
