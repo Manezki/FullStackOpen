@@ -1,6 +1,6 @@
-import React from 'react'
+import React from "react"
 import Togglable from "./reusable/Togglable"
-import blogService from '../services/blogs'
+import blogService from "../services/blogs"
 
 const Blog = ({ blog, blogs, setBlogs, loggedInUser, addNotification }) => {
 
