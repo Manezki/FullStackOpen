@@ -36,7 +36,7 @@ const Blog = ({ blog, blogs, setBlogs, loggedInUser, addNotification }) => {
   return (
     <div className="blog">
       <div>
-        {blog.title}
+        {blog.title}; by {blog.author}
         <Togglable buttonLabel="View" cancelLabel="Hide">
           <div>
             Url: {blog.url}
@@ -46,7 +46,7 @@ const Blog = ({ blog, blogs, setBlogs, loggedInUser, addNotification }) => {
           </div>
           <div>
             Likes: {blog.likes}
-            <button onClick={handleLike}>Like</button>
+            <button className="likeButton" onClick={handleLike}>Like</button>
           </div>
           { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={handleDelete}>Delete</button> }
         </Togglable>

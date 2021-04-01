@@ -10,14 +10,12 @@ const Blogsubmission = ({ blogs, setBlogs, addNotification, blogFormRef }) => {
   const handleSubmit = async ( event ) => {
     event.preventDefault()
 
-    const { title, author, url } = event.target
-
     try {
       const response = await blogService.create(
         {
-          title: title.value,
-          author: author.value,
-          url: url.value,
+          title: title,
+          author: author,
+          url: url,
         })
 
       setBlogs(blogs.concat([response]))
@@ -46,6 +44,7 @@ const Blogsubmission = ({ blogs, setBlogs, addNotification, blogFormRef }) => {
           <input
             type="text"
             name="title"
+            id="title"
             value={title}
             onChange={({ target }) => setTitle(target.value)} />
         </div>
@@ -54,6 +53,7 @@ const Blogsubmission = ({ blogs, setBlogs, addNotification, blogFormRef }) => {
           <input
             type="text"
             name="author"
+            id="author"
             value={author}
             onChange={({ target }) => setAuthor(target.value)} />
         </div>
@@ -62,6 +62,7 @@ const Blogsubmission = ({ blogs, setBlogs, addNotification, blogFormRef }) => {
           <input
             type="url"
             name="url"
+            id="url"
             value={url}
             onChange={({ target }) => setUrl(target.value)} />
         </div>
