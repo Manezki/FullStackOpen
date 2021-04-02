@@ -68,6 +68,36 @@ const App = () => {
     }
   }
 
+  const handleBlogLike = async ({ blog }) => {
+    console.log(blog)
+    const newBlog = await blogService.update({ ...blog, likes: blog.likes + 1 })
+    console.log(newBlog)
+
+    setBlogs(blogs.map( (blog) => blog.id === newBlog.id ? newBlog : blog ))
+  }
+
+  const handleBlogDelete = async ({ blog }) => {
+    if (!window.confirm(`Delete blog: ${blog.title}?`)) {
+      return
+    }
+
+    try{
+      await blogService.remove(blog.id)
+
+      setBlogs(blogs.filter( (storedBlog) => storedBlog.id !== blog.id ))
+
+      addNotification({
+        type: "success",
+        message: `Succesfully deleted ${blog.title}`
+      })
+    } catch (error) {
+      addNotification({
+        type: "error",
+        message: `Could not delete ${blog.title}, reason: ${error.message}`
+      })
+    }
+  }
+
   if (user === null) {
     return (
       <>
@@ -95,7 +125,7 @@ const App = () => {
       <br />
 
       {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog =>
-        <Blog key={blog.id} blog={blog} blogs={blogs} setBlogs={setBlogs} loggedInUser={user} addNotification={addNotification} />
+        <Blog key={blog.id} blog={blog} loggedInUser={user} handleBlogLike={handleBlogLike} handleBlogDelete={handleBlogDelete} />
       )}
     </div>
   )

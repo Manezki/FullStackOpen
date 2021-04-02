@@ -2,14 +2,11 @@ import React from "react"
 import "@testing-library/jest-dom/extend-expect"
 import { render, fireEvent } from "@testing-library/react"
 import Blog from "./Blog"
-import blogService from "../services/blogs"
-
-jest.mock("../services/blogs")
 
 describe("<Blog />", () => {
   let component
-  const setBlogsMock = jest.fn()
-  const addNotificationMock = jest.fn()
+  const handleBlogLikeMock = jest.fn()
+  const handleBlogDeleteMock = jest.fn()
   const testBlog = {
     title: "The king",
     author: "Manezki",
@@ -26,7 +23,7 @@ describe("<Blog />", () => {
 
   beforeEach(() => {
     component = render(
-      <Blog blog={testBlog} blogs={[testBlog]} setBlogs={setBlogsMock} loggedInUser={testUser} addNotification={addNotificationMock}/>
+      <Blog blog={testBlog} loggedInUser={testUser} handleBlogLike={handleBlogLikeMock} handleBlogDelete={handleBlogDeleteMock} />
     )
   })
 
@@ -62,10 +59,6 @@ describe("<Blog />", () => {
   })
 
   test("likeHandler is triggered on like-clicks", () => {
-    const mocker = blogService.update.mockResolvedValue({
-      ...testBlog, likes: testBlog.likes + 1
-    })
-
     const viewButton = component.getByRole("button")
 
     fireEvent.click(viewButton)
@@ -77,7 +70,7 @@ describe("<Blog />", () => {
 
     // Avoid the internal method by inferring the call from mocked API
     expect(
-      mocker.mock.calls
+      handleBlogLikeMock.mock.calls
     ).toHaveLength(2)
   })
 })
