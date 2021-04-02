@@ -93,7 +93,7 @@ blogsRouter.put("/:id", async (request, response, next) => {
 
       const result = await Blog.findByIdAndUpdate(
         id, request.body, { new: true, runValidators: true },
-      )
+      ).populate("user", { username: 1, name: 1 })
       response.json(result)
     }
   } catch (error) {
