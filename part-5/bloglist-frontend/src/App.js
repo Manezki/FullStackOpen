@@ -42,6 +42,32 @@ const App = () => {
     window.localStorage.removeItem("user")
   }
 
+  const handleBlogSubmission = async ({ title, author, url }) => {
+    try {
+      const response = await blogService.create(
+        {
+          title,
+          author,
+          url,
+        })
+
+      setBlogs(blogs.concat([response]))
+
+      addNotification({
+        type: "success",
+        message: `A new blog ${response.title} by ${response.author} added`,
+      })
+
+      blogFormRef.current.setVisibility()
+
+    } catch (error) {
+      addNotification({
+        type: "error",
+        message: error.message,
+      })
+    }
+  }
+
   if (user === null) {
     return (
       <>
@@ -63,7 +89,7 @@ const App = () => {
       <br />
 
       <Togglable buttonLabel={"Add a new blog"} cancelLabel={"Cancel"} ref={blogFormRef}>
-        <Blogsubmission blogs={blogs} setBlogs={setBlogs} addNotification={addNotification} blogFormRef={blogFormRef} />
+        <Blogsubmission handleBlogSubmission={handleBlogSubmission} />
       </Togglable>
       <br />
       <br />
