@@ -31,6 +31,11 @@ app.use("/api/blogs", blogsRouter)
 app.use("/api/users", usersRouter)
 app.use("/api/login", loginRouter)
 
+if (config.NODE_ENV === "test") {
+  const resetRouter = require("./controllers/reset") // eslint-disable-line
+  app.use("/api/testing", resetRouter)
+}
+
 app.use(middleware.errorHandler)
 
 module.exports = app
