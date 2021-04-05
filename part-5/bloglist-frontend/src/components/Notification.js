@@ -2,7 +2,7 @@ import React from "react"
 
 const Notification = ({ type, message }) => {
   return (
-    <div className="notification" id={type}>
+    <div className={`notification ${type}`}>
       <h2>{message}</h2>
     </div>
   )

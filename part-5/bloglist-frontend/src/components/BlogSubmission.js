@@ -21,7 +21,7 @@ const Blogsubmission = ({ handleBlogSubmission }) => {
           <input
             type="text"
             name="title"
-            id="title"
+            id="newblog-title"
             value={title}
             onChange={({ target }) => setTitle(target.value)} />
         </div>
@@ -30,7 +30,7 @@ const Blogsubmission = ({ handleBlogSubmission }) => {
           <input
             type="text"
             name="author"
-            id="author"
+            id="newblog-author"
             value={author}
             onChange={({ target }) => setAuthor(target.value)} />
         </div>
@@ -39,11 +39,11 @@ const Blogsubmission = ({ handleBlogSubmission }) => {
           <input
             type="url"
             name="url"
-            id="url"
+            id="newblog-url"
             value={url}
             onChange={({ target }) => setUrl(target.value)} />
         </div>
-        <button type="submit">submit</button>
+        <button type="submit" id="newblog-submit">submit</button>
       </form>
     </div>
   )

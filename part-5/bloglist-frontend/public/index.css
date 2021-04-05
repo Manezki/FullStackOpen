@@ -6,11 +6,11 @@
     border-radius: 15px;
 }
 
-#error {
+.error {
     color: lightcoral;
 }
 
-#success {
+.success {
     color: green;
 }
 

@@ -69,9 +69,7 @@ const App = () => {
   }
 
   const handleBlogLike = async ({ blog }) => {
-    console.log(blog)
     const newBlog = await blogService.update({ ...blog, likes: blog.likes + 1 })
-    console.log(newBlog)
 
     setBlogs(blogs.map( (blog) => blog.id === newBlog.id ? newBlog : blog ))
   }
@@ -114,7 +112,7 @@ const App = () => {
       {notifications.map((notif) => <Notification key={notif.id} type={notif.type} message={notif.message} />)}
       <div>
         &lsquo;{user.name}&lsquo; logged in
-        <button onClick={logout}>logout</button>
+        <button onClick={logout}>Logout</button>
       </div>
       <br />
 
