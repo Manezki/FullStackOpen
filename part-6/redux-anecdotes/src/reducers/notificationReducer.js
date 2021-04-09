@@ -1,7 +1,5 @@
 const reducer = (state = "", action) => {
   switch (action.type) {
-    case "CREATE":
-      return `Created: ${action.anecdote.content}`
     case "NOTIFY":
       return `${action.notification}`
     case "RESET-NOTIFICATION":
@@ -17,10 +15,17 @@ export const removeNotification = () => {
   }
 }
 
-export const notify = (msg) => {
-  return {
-    type: "NOTIFY",
-    notification: msg
+export const notify = (msg, seconds) => {
+  return async (dispatch) => {
+    
+    setTimeout(() => {
+      dispatch(removeNotification())
+    }, seconds*1000)
+    
+    dispatch({
+      type: "NOTIFY",
+      notification: msg
+    })
   }
 }
 

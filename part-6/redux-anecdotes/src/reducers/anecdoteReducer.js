@@ -1,14 +1,12 @@
+import anecdoteService from "../services/anecdotes"
+import { notify } from "./notificationReducer"
+
 const reducer = (state = [], action) => {
   switch (action.type) {
     case "VOTE":
 
       try {
-        const anecdoteToUpdate = state.find((anecdote) => anecdote.id === action.id)
-        const updatedAnectode = {
-          ...anecdoteToUpdate,
-          votes: anecdoteToUpdate.votes + 1
-        }
-        return state.map((anecdote) => anecdote.id === action.id ? updatedAnectode : anecdote)
+        return state.map((anecdote) => anecdote.id === action.anecdote.id ? action.anecdote : anecdote)
       } catch (error) {
         return state
       }
@@ -23,23 +21,34 @@ const reducer = (state = [], action) => {
 }
 
 export const voteAnecdote = (id) => {
-  return {
-    type: "VOTE",
-    id: id
+  return async (dispatch) => {
+    const newAnecdote = await anecdoteService.voteAnecdote(id)
+    dispatch({
+      type: "VOTE",
+      anecdote: newAnecdote
+    })
+    dispatch(notify(`You voted for: ${newAnecdote.content}`, 5))
   }
 }
 
 export const createAnecdote = ( anecdote ) => {
-  return {
-    type: "CREATE",
-    anecdote
+  return async (dispatch) => {
+    const newAnecdote = await anecdoteService.addAnecdote(anecdote)
+    dispatch({
+      type: "CREATE",
+      anecdote: newAnecdote
+    })
+    dispatch(notify(`You added an anecdote: ${newAnecdote.content}`, 5))
   }
 }
 
-export const initAnecdotes = (anecdotes) => {
-  return {
-    type: "INIT-ANECDOTES",
-    anecdotes
+export const initAnecdotes = () => {
+  return async (dispatch) => {
+    const anecdotes = await anecdoteService.getAll()
+    dispatch({
+      type: "INIT-ANECDOTES",
+      anecdotes
+    })
   }
 }
 

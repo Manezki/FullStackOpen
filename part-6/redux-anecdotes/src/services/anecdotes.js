@@ -12,8 +12,15 @@ const addAnecdote = async (anecdoteContent) => {
   return response.data
 }
 
+const voteAnecdote = async (id) => {
+  const preVote = await axios.get(`${baseUrl}/${id}`)
+  const response = await axios.put(`${baseUrl}/${id}`, {...preVote.data, votes: preVote.data.votes + 1})
+  return response.data
+}
+
 /* eslint import/no-anonymous-default-export: [2, {"allowObject": true}] */
 export default {
   getAll,
-  addAnecdote
+  addAnecdote,
+  voteAnecdote
 }
