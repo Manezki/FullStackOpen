@@ -1,7 +1,7 @@
 const reducer = (state = "", action) => {
   switch (action.type) {
     case "CREATE":
-      return `Created: ${action.content}`
+      return `Created: ${action.anecdote.content}`
     case "NOTIFY":
       return `${action.notification}`
     case "RESET-NOTIFICATION":
