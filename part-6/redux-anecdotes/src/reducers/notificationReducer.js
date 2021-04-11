@@ -1,9 +1,19 @@
-const reducer = (state = "", action) => {
+const reducer = (state = { message: "", timeOutID: null }, action) => {
   switch (action.type) {
     case "NOTIFY":
-      return `${action.notification}`
+      if (state.timeOutID) {
+        clearTimeout(state.timeOutID)
+      }
+
+      return {
+        message: `${action.notification}`,
+        timeOutID: action.timeOutID
+      }
     case "RESET-NOTIFICATION":
-      return ""
+      return {
+        message: "",
+        timeOutID: null
+      }
     default:
       return state
   }
@@ -18,13 +28,14 @@ export const removeNotification = () => {
 export const notify = (msg, seconds) => {
   return async (dispatch) => {
     
-    setTimeout(() => {
+    const timeOutID = setTimeout(() => {
       dispatch(removeNotification())
     }, seconds*1000)
     
     dispatch({
       type: "NOTIFY",
-      notification: msg
+      notification: msg,
+      timeOutID
     })
   }
 }
