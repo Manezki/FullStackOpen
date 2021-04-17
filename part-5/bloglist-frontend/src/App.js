@@ -1,18 +1,24 @@
 import React, { useState, useEffect, useRef } from "react"
+import { useDispatch, useSelector } from "react-redux"
+
 import Blog from "./components/Blog"
 import Blogsubmission from "./components/BlogSubmission"
 import LoginForm from "./components/LoginForm"
 import Notification from "./components/Notification"
 import Togglable from "./components/reusable/Togglable"
+
 import blogService from "./services/blogs"
+
+import { addNotification } from "./reducers/notificationReducer"
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [notifications, setNotifications] = useState([])
-  const [nNotifications, setNNotifications] = useState(0)
   const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
+  const dispatch = useDispatch()
+
+  const notification = useSelector(({ notification }) => notification)
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -28,14 +34,6 @@ const App = () => {
       blogService.setToken(userObject.token)
     }
   }, [])
-
-  const addNotification = (notification) => {
-    setNotifications(notifications.concat([{ id: nNotifications, ...notification }]))
-    setNNotifications(nNotifications + 1)
-    setTimeout(() => {
-      setNotifications([])
-    }, 5000)
-  }
 
   const logout = () => {
     setUser(null)
@@ -53,18 +51,18 @@ const App = () => {
 
       setBlogs(blogs.concat([response]))
 
-      addNotification({
-        type: "success",
-        message: `A new blog ${response.title} by ${response.author} added`,
-      })
+      dispatch(addNotification(
+        `A new blog ${response.title} by ${response.author} added`,
+        "success",
+      ))
 
       blogFormRef.current.setVisibility()
 
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: error.message,
-      })
+      dispatch(addNotification(
+        error.message,
+        "error"
+      ))
     }
   }
 
@@ -84,15 +82,15 @@ const App = () => {
 
       setBlogs(blogs.filter( (storedBlog) => storedBlog.id !== blog.id ))
 
-      addNotification({
-        type: "success",
-        message: `Succesfully deleted ${blog.title}`
-      })
+      dispatch(addNotification(
+        `Succesfully deleted ${blog.title}`,
+        "success"
+      ))
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: `Could not delete ${blog.title}, reason: ${error.message}`
-      })
+      dispatch(addNotification(
+        `Could not delete ${blog.title}, reason: ${error.message}`,
+        "error"
+      ))
     }
   }
 
@@ -100,8 +98,10 @@ const App = () => {
     return (
       <>
         <h2>blogs</h2>
-        {notifications.map((notif) => <Notification key={notif.id} type={notif.type} message={notif.message} />)}
-        <LoginForm setUser={setUser} addNotification={addNotification} />
+        {(Object.keys(notification).length !== 0)
+          ? <Notification type={notification.type} message={notification.message} />
+          : null}
+        <LoginForm setUser={setUser} />
       </>
     )
   }
@@ -109,7 +109,9 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      {notifications.map((notif) => <Notification key={notif.id} type={notif.type} message={notif.message} />)}
+      {(Object.keys(notification).length !== 0)
+        ? <Notification type={notification.type} message={notification.message} />
+        : null}
       <div>
         &lsquo;{user.name}&lsquo; logged in
         <button onClick={logout}>Logout</button>

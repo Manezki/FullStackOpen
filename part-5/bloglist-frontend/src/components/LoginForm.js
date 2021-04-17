@@ -1,12 +1,16 @@
 import React, { useState } from "react"
+import { useDispatch } from "react-redux"
 import Login from "./../services/login"
 import blogService from "./../services/blogs"
+import { addNotification } from "../reducers/notificationReducer"
 
 
-const LoginForm = ({ setUser, addNotification }) => {
+const LoginForm = ({ setUser }) => {
 
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+
+  const dispatch = useDispatch()
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -20,10 +24,10 @@ const LoginForm = ({ setUser, addNotification }) => {
         window.localStorage.setItem("user", JSON.stringify(user))
       })
       .catch((reason) => {
-        addNotification({
-          type: "error",
-          message: reason.response.data.error,
-        })
+        dispatch(addNotification(
+          reason.response.data.error,
+          "error"
+        ))
       })
   }
 
