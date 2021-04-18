@@ -22,17 +22,17 @@ describe("<Blog />", () => {
   })
 
   test("input values are correctly passed to submission handler", () => {
-    const titleInput = component.container.querySelector("#title")
+    const titleInput = component.container.querySelector("#newblog-title")
     fireEvent.change(titleInput, {
       target: { value: testBlog.title }
     })
 
-    const authorInput = component.container.querySelector("#author")
+    const authorInput = component.container.querySelector("#newblog-author")
     fireEvent.change(authorInput, {
       target: { value: "Manezki" }
     })
 
-    const urlInput = component.container.querySelector("#url")
+    const urlInput = component.container.querySelector("#newblog-url")
     fireEvent.change(urlInput, {
       target: { value: "http://www.localhost:3000" }
     })
