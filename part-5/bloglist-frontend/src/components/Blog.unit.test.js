@@ -1,12 +1,12 @@
 import React from "react"
 import "@testing-library/jest-dom/extend-expect"
-import { render, fireEvent } from "@testing-library/react"
 import Blog from "./Blog"
+import { render, fireEvent, createDummyStore } from "../test-utils"
 
 describe("<Blog />", () => {
   let component
-  const handleBlogLikeMock = jest.fn()
-  const handleBlogDeleteMock = jest.fn()
+  let store
+
   const testBlog = {
     title: "The king",
     author: "Manezki",
@@ -22,8 +22,10 @@ describe("<Blog />", () => {
   }
 
   beforeEach(() => {
+    store = createDummyStore()
     component = render(
-      <Blog blog={testBlog} loggedInUser={testUser} handleBlogLike={handleBlogLikeMock} handleBlogDelete={handleBlogDeleteMock} />
+      <Blog blog={testBlog} loggedInUser={testUser} />,
+      { store: store }
     )
   })
 
@@ -70,7 +72,7 @@ describe("<Blog />", () => {
 
     // Avoid the internal method by inferring the call from mocked API
     expect(
-      handleBlogLikeMock.mock.calls
+      store.dispatch.mock.calls
     ).toHaveLength(2)
   })
 })

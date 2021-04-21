@@ -9,22 +9,20 @@ import Togglable from "./components/reusable/Togglable"
 
 import blogService from "./services/blogs"
 
-import { addNotification } from "./reducers/notificationReducer"
+import { initBlogs } from "./reducers/blogReducer"
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
   const dispatch = useDispatch()
 
   const notification = useSelector(({ notification }) => notification)
+  const blogs = useSelector(({ blogs }) => blogs)
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )
-  }, [])
+    dispatch(initBlogs())
+  }, [dispatch, initBlogs])
 
   useEffect(() => {
     const user = window.localStorage.getItem("user")
@@ -38,60 +36,6 @@ const App = () => {
   const logout = () => {
     setUser(null)
     window.localStorage.removeItem("user")
-  }
-
-  const handleBlogSubmission = async ({ title, author, url }) => {
-    try {
-      const response = await blogService.create(
-        {
-          title,
-          author,
-          url,
-        })
-
-      setBlogs(blogs.concat([response]))
-
-      dispatch(addNotification(
-        `A new blog ${response.title} by ${response.author} added`,
-        "success",
-      ))
-
-      blogFormRef.current.setVisibility()
-
-    } catch (error) {
-      dispatch(addNotification(
-        error.message,
-        "error"
-      ))
-    }
-  }
-
-  const handleBlogLike = async ({ blog }) => {
-    const newBlog = await blogService.update({ ...blog, likes: blog.likes + 1 })
-
-    setBlogs(blogs.map( (blog) => blog.id === newBlog.id ? newBlog : blog ))
-  }
-
-  const handleBlogDelete = async ({ blog }) => {
-    if (!window.confirm(`Delete blog: ${blog.title}?`)) {
-      return
-    }
-
-    try{
-      await blogService.remove(blog.id)
-
-      setBlogs(blogs.filter( (storedBlog) => storedBlog.id !== blog.id ))
-
-      dispatch(addNotification(
-        `Succesfully deleted ${blog.title}`,
-        "success"
-      ))
-    } catch (error) {
-      dispatch(addNotification(
-        `Could not delete ${blog.title}, reason: ${error.message}`,
-        "error"
-      ))
-    }
   }
 
   if (user === null) {
@@ -119,13 +63,13 @@ const App = () => {
       <br />
 
       <Togglable buttonLabel={"Add a new blog"} cancelLabel={"Cancel"} ref={blogFormRef}>
-        <Blogsubmission handleBlogSubmission={handleBlogSubmission} />
+        <Blogsubmission submissionFormVisibilityRef={blogFormRef} />
       </Togglable>
       <br />
       <br />
 
       {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog =>
-        <Blog key={blog.id} blog={blog} loggedInUser={user} handleBlogLike={handleBlogLike} handleBlogDelete={handleBlogDelete} />
+        <Blog key={blog.id} blog={blog} loggedInUser={user} />
       )}
     </div>
   )

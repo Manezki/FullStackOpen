@@ -1,21 +1,24 @@
 import React, { useState } from "react"
+import { useDispatch } from "react-redux"
+import { createBlog } from "../reducers/blogReducer"
 
-const Blogsubmission = ({ handleBlogSubmission }) => {
+const Blogsubmission = ({ submissionFormVisibilityRef }) => {
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [url, setUrl] = useState("")
 
+  const dispatch = useDispatch()
+
+  const handleBlogSubmission = async (event) => {
+    event.preventDefault()
+    dispatch(createBlog({ title, author, url }))
+    submissionFormVisibilityRef.current.toggleVisibility()
+  }
+
   return (
     <div>
       <h2>Create new</h2>
-      <form onSubmit={ (event) => {
-        event.preventDefault()
-        handleBlogSubmission({
-          title,
-          author,
-          url
-        })
-      }}>
+      <form onSubmit={handleBlogSubmission}>
         <div>
           title
           <input

@@ -4,13 +4,13 @@ import PropTypes from "prop-types"
 const Togglable = React.forwardRef(({ buttonLabel, cancelLabel, children }, ref) => {
   const [visible, setVisible] = useState(false)
 
-  const setVisibility = () => {
+  const toggleVisibility = () => {
     setVisible(!visible)
   }
 
   useImperativeHandle(ref, () => {
     return {
-      setVisibility
+      toggleVisibility
     }
   })
 
@@ -18,12 +18,12 @@ const Togglable = React.forwardRef(({ buttonLabel, cancelLabel, children }, ref)
     return (
       <>
         {children}
-        <button onClick={setVisibility}>{cancelLabel}</button>
+        <button onClick={toggleVisibility}>{cancelLabel}</button>
       </>
     )
   } else {
     return (
-      <button onClick={setVisibility}>{buttonLabel}</button>
+      <button onClick={toggleVisibility}>{buttonLabel}</button>
     )
   }
 })

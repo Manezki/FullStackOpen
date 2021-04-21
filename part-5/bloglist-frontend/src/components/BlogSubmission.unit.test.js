@@ -1,11 +1,24 @@
 import React from "react"
 import "@testing-library/jest-dom/extend-expect"
-import { render, fireEvent } from "@testing-library/react"
 import Blogsubmission from "./BlogSubmission"
+import { render, fireEvent, createDummyStore } from "../test-utils"
+
+jest.mock("../reducers/blogReducer", () => ({
+  createBlog: jest.fn((params) => params)
+}))
+
+import { createBlog } from "../reducers/blogReducer"
 
 describe("<Blog />", () => {
   let component
-  const handleBlogSubmissionMock = jest.fn()
+  let store
+
+  const submissionFormVisibilityRef = {
+    current: {
+      toggleVisibility: jest.fn()
+    }
+  }
+
   const testBlog = {
     title: "The king",
     author: "Manezki",
@@ -16,8 +29,10 @@ describe("<Blog />", () => {
   }
 
   beforeEach(() => {
+    store = createDummyStore()
     component = render(
-      <Blogsubmission handleBlogSubmission={handleBlogSubmissionMock} />
+      <Blogsubmission submissionFormVisibilityRef={submissionFormVisibilityRef} />,
+      { store: store }
     )
   })
 
@@ -40,9 +55,10 @@ describe("<Blog />", () => {
     const form = component.container.querySelector("form")
     fireEvent.submit(form)
 
-    expect(handleBlogSubmissionMock.mock.calls).toHaveLength(1)
-    expect(handleBlogSubmissionMock.mock.calls[0][0].title).toBe(testBlog.title)
-    expect(handleBlogSubmissionMock.mock.calls[0][0].author).toBe(testBlog.author)
-    expect(handleBlogSubmissionMock.mock.calls[0][0].url).toBe(testBlog.url)
+    expect(store.dispatch.mock.calls).toHaveLength(1)
+    expect(submissionFormVisibilityRef.current.toggleVisibility.mock.calls).toHaveLength(1)
+    expect(createBlog.mock.calls[0][0].title).toBe(testBlog.title)
+    expect(createBlog.mock.calls[0][0].author).toBe(testBlog.author)
+    expect(createBlog.mock.calls[0][0].url).toBe(testBlog.url)
   })
 })

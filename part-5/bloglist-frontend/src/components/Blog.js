@@ -1,7 +1,19 @@
 import React from "react"
 import Togglable from "./reusable/Togglable"
+import { useDispatch } from "react-redux"
+import { likeBlog, deleteBlog } from "../reducers/blogReducer"
 
-const Blog = ({ blog, handleBlogLike, handleBlogDelete, loggedInUser }) => {
+const Blog = ({ blog, loggedInUser }) => {
+  const dispatch = useDispatch()
+
+  const handleBlogDelete = async () => {
+    if (!window.confirm(`Delete blog: ${blog.title}?`)) {
+      return
+    }
+
+    dispatch(deleteBlog(blog))
+  }
+
   return (
     <div className="blog">
       <div>
@@ -15,9 +27,9 @@ const Blog = ({ blog, handleBlogLike, handleBlogDelete, loggedInUser }) => {
           </div>
           <div>
             Likes: {blog.likes}
-            <button className="likeButton" onClick={ () => handleBlogLike({ blog })}>Like</button>
+            <button className="likeButton" onClick={ () => dispatch(likeBlog(blog)) }>Like</button>
           </div>
-          { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete({ blog })}>Delete</button> }
+          { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }
         </Togglable>
       </div>
     </div>
