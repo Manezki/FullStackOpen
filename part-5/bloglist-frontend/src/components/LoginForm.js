@@ -1,11 +1,10 @@
 import React, { useState } from "react"
 import { useDispatch } from "react-redux"
-import Login from "./../services/login"
-import blogService from "./../services/blogs"
+import login from "./../services/login"
 import { addNotification } from "../reducers/notificationReducer"
+import { loginUser } from "../reducers/loginReducer"
 
-
-const LoginForm = ({ setUser }) => {
+const LoginForm = () => {
 
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -15,13 +14,11 @@ const LoginForm = ({ setUser }) => {
   const handleLogin = async (event) => {
     event.preventDefault()
 
-    Login.login({
+    login.login({
       username, password
     })
       .then((user) => {
-        setUser(user)
-        blogService.setToken(user.token)
-        window.localStorage.setItem("user", JSON.stringify(user))
+        dispatch(loginUser(user))
       })
       .catch((reason) => {
         dispatch(addNotification(

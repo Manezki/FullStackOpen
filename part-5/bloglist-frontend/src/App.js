@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 
 import Blog from "./components/Blog"
@@ -7,45 +7,33 @@ import LoginForm from "./components/LoginForm"
 import Notification from "./components/Notification"
 import Togglable from "./components/reusable/Togglable"
 
-import blogService from "./services/blogs"
-
 import { initBlogs } from "./reducers/blogReducer"
+import { restoreLogin, logoutUser } from "./reducers/loginReducer"
 
 const App = () => {
-  const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
   const dispatch = useDispatch()
 
-  const notification = useSelector(({ notification }) => notification)
-  const blogs = useSelector(({ blogs }) => blogs)
+  const { notification, blogs, loggedInUser } = useSelector(( state ) => state)
 
   useEffect(() => {
     dispatch(initBlogs())
-  }, [dispatch, initBlogs])
-
-  useEffect(() => {
-    const user = window.localStorage.getItem("user")
-    if (user) {
-      const userObject = JSON.parse(user)
-      setUser(userObject)
-      blogService.setToken(userObject.token)
-    }
-  }, [])
+    dispatch(restoreLogin())
+  }, [dispatch, initBlogs, restoreLogin])
 
   const logout = () => {
-    setUser(null)
-    window.localStorage.removeItem("user")
+    dispatch(logoutUser())
   }
 
-  if (user === null) {
+  if (Object.keys(loggedInUser).length === 0) {
     return (
       <>
         <h2>blogs</h2>
         {(Object.keys(notification).length !== 0)
           ? <Notification type={notification.type} message={notification.message} />
           : null}
-        <LoginForm setUser={setUser} />
+        <LoginForm />
       </>
     )
   }
@@ -57,7 +45,7 @@ const App = () => {
         ? <Notification type={notification.type} message={notification.message} />
         : null}
       <div>
-        &lsquo;{user.name}&lsquo; logged in
+        &lsquo;{loggedInUser.name}&lsquo; logged in
         <button onClick={logout}>Logout</button>
       </div>
       <br />
@@ -69,7 +57,7 @@ const App = () => {
       <br />
 
       {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog =>
-        <Blog key={blog.id} blog={blog} loggedInUser={user} />
+        <Blog key={blog.id} blog={blog} loggedInUser={loggedInUser} />
       )}
     </div>
   )

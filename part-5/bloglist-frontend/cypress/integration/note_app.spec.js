@@ -47,7 +47,7 @@ describe("Blog app", function() {
           username: "testuser",
           password: "secret"
         }).then((response) => {
-          localStorage.setItem("user", JSON.stringify(response.body))
+          localStorage.setItem("loggedInUser", JSON.stringify(response.body))
           cy.visit("http://localhost:3000")
         })
       })

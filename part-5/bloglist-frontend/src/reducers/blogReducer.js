@@ -2,7 +2,6 @@ import blogService from "../services/blogs"
 import { addNotification } from "./notificationReducer"
 
 const reducer = (state = [], action) => {
-  console.log(action)
   switch (action.type) {
   case "CREATE":
     return state.concat(action.blog)

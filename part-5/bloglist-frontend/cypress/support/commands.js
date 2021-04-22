@@ -17,7 +17,7 @@ Cypress.Commands.add("createBlog", ({ title, author, url, likes }) => {
     method: "POST",
     body: { title, author, url, likes: likes !== undefined ? likes : 0 },
     headers: {
-      "Authorization": `bearer ${JSON.parse(localStorage.getItem("user")).token}`
+      "Authorization": `bearer ${JSON.parse(localStorage.getItem("loggedInUser")).token}`
     }
   })
 })
