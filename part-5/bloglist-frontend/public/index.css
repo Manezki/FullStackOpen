@@ -25,3 +25,36 @@
 #deleteButton {
     color: lightcoral;
 }
+
+.navBar .link {
+    padding: 5px 5px 5px 5px;
+}
+
+.usersList .container {
+    display: flex;
+    flex-direction: column;
+}
+
+.usersList .userRow {
+    display: flex;
+    flex-direction: row;
+    margin: 5px 0;
+    padding: 3px;
+    width: min-content;
+}
+
+.usersList .userItem {
+    border: 3px solid gray;
+    border-radius: 5px;
+}
+
+.userRow .left {
+    margin: 0 10px;
+    width: 200px;
+}
+
+.userRow .right {
+    margin: 0 10px;
+    width: 50px;
+    text-align: center;
+}

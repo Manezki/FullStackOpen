@@ -1,10 +1,16 @@
 import React, { useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import {
+  BrowserRouter as Router,
+  Switch, Route, Link
+} from "react-router-dom"
+
 
 import Blog from "./components/Blog"
 import Blogsubmission from "./components/BlogSubmission"
 import LoginForm from "./components/LoginForm"
 import Notification from "./components/Notification"
+import Users from "./components/Users"
 import Togglable from "./components/reusable/Togglable"
 
 import { initBlogs } from "./reducers/blogReducer"
@@ -20,7 +26,7 @@ const App = () => {
   useEffect(() => {
     dispatch(initBlogs())
     dispatch(restoreLogin())
-  }, [dispatch, initBlogs, restoreLogin])
+  }, [dispatch])
 
   const logout = () => {
     dispatch(logoutUser())
@@ -39,27 +45,37 @@ const App = () => {
   }
 
   return (
-    <div>
-      <h2>blogs</h2>
-      {(Object.keys(notification).length !== 0)
-        ? <Notification type={notification.type} message={notification.message} />
-        : null}
-      <div>
-        &lsquo;{loggedInUser.name}&lsquo; logged in
-        <button onClick={logout}>Logout</button>
+    <Router>
+      <div className="navBar">
+        <Link className="link" to="/">Blogs</Link>
+        <Link className="link" to="/users">Users</Link>
       </div>
-      <br />
+      <div>
+        <h2>blogs</h2>
+        {(Object.keys(notification).length !== 0)
+          ? <Notification type={notification.type} message={notification.message} />
+          : null}
+        <div>
+          &lsquo;{loggedInUser.name}&lsquo; logged in
+          <button onClick={logout}>Logout</button>
+        </div>
+        <br />
 
-      <Togglable buttonLabel={"Add a new blog"} cancelLabel={"Cancel"} ref={blogFormRef}>
-        <Blogsubmission submissionFormVisibilityRef={blogFormRef} />
-      </Togglable>
-      <br />
-      <br />
-
-      {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog =>
-        <Blog key={blog.id} blog={blog} loggedInUser={loggedInUser} />
-      )}
-    </div>
+        <Switch>
+          <Route path="/users">
+            <Users />
+          </Route>
+          <Route path="/">
+            <Togglable buttonLabel={"Add a new blog"} cancelLabel={"Cancel"} ref={blogFormRef}>
+              <Blogsubmission submissionFormVisibilityRef={blogFormRef} />
+            </Togglable>
+            {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog =>
+              <Blog key={blog.id} blog={blog} loggedInUser={loggedInUser} />
+            )}
+          </Route>
+        </Switch>
+      </div>
+    </Router>
   )
 }
 
