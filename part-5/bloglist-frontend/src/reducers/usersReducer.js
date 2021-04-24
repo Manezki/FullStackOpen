@@ -10,7 +10,13 @@ const reducer = (state = [], action) => {
 }
 
 export const initUsers = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+
+    const { users } = getState()
+    if (users.length !== 0) {
+      return
+    }
+
     try {
       const users = await userService.getAll()
       dispatch({
