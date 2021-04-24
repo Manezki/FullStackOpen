@@ -1,10 +1,18 @@
-import React from "react"
-import Togglable from "./reusable/Togglable"
-import { useDispatch } from "react-redux"
-import { likeBlog, deleteBlog } from "../reducers/blogReducer"
+import React, { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { likeBlog, deleteBlog, initBlogs } from "../reducers/blogReducer"
+import { useParams, Link } from "react-router-dom"
 
-const Blog = ({ blog, loggedInUser }) => {
+const Blog = () => {
+  const id = useParams().id
+
   const dispatch = useDispatch()
+  const loggedInUser = useSelector((state) => state.loggedInUser)
+  const blog = useSelector(({ blogs }) => blogs.find((blog) => blog.id === id))
+
+  useEffect(() => {
+    dispatch(initBlogs())
+  }, [dispatch])
 
   const handleBlogDelete = async () => {
     if (!window.confirm(`Delete blog: ${blog.title}?`)) {
@@ -14,23 +22,26 @@ const Blog = ({ blog, loggedInUser }) => {
     dispatch(deleteBlog(blog))
   }
 
+  if (!blog) {
+    return null
+  }
+
   return (
     <div className="blog">
       <div>
-        {blog.title}; by {blog.author}
-        <Togglable buttonLabel="View" cancelLabel="Hide">
-          <div>
-            Url: {blog.url}
-          </div>
-          <div>
-            Author: {blog.author}
-          </div>
-          <div>
-            Likes: {blog.likes}
-            <button className="likeButton" onClick={ () => dispatch(likeBlog(blog)) }>Like</button>
-          </div>
-          { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }
-        </Togglable>
+        <h2 style={{ margin: "12px 2px 1px 2px" }}>{blog.title}</h2>
+        <h3 style={{ margin: "1px 2px 12px 2px", color: "#606060" }}>By: {blog.author}</h3>
+        <div>
+          Url: <a href={blog.url}>{blog.url}</a>
+        </div>
+        <div>
+          Likes: {blog.likes}
+          <button className="likeButton" onClick={ () => dispatch(likeBlog(blog)) }>Like</button>
+        </div>
+        <div>
+          Added by: <Link to={`/users/${blog.user.id}`}>{blog.user.username}</Link>
+        </div>
+        { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }
       </div>
     </div>
   )

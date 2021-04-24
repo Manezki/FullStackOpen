@@ -75,7 +75,13 @@ export const deleteBlog = (blog) => {
 }
 
 export const initBlogs = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState ) => {
+
+    const { blogs } = getState()
+    if (blogs.length !== 0) {
+      return
+    }
+
     try {
       const blogs = await blogService.getAll()
       dispatch({

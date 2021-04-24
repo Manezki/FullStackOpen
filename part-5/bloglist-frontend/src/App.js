@@ -69,13 +69,20 @@ const App = () => {
           <Route path="/users">
             <Users />
           </Route>
+          <Route path="/blogs/:id">
+            <Blog />
+          </Route>
           <Route path="/">
             <Togglable buttonLabel={"Add a new blog"} cancelLabel={"Cancel"} ref={blogFormRef}>
               <Blogsubmission submissionFormVisibilityRef={blogFormRef} />
             </Togglable>
-            {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog =>
-              <Blog key={blog.id} blog={blog} loggedInUser={loggedInUser} />
-            )}
+            {[...blogs].sort((a, b) => -(a.likes - b.likes)).map(blog => {
+              return (
+                <div className="blog" key={blog.id}>
+                  <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+                </div>
+              )
+            })}
           </Route>
         </Switch>
       </div>
