@@ -11,6 +11,7 @@ import Blogsubmission from "./components/BlogSubmission"
 import LoginForm from "./components/LoginForm"
 import Notification from "./components/Notification"
 import Users from "./components/Users"
+import User from "./components/User"
 import Togglable from "./components/reusable/Togglable"
 
 import { initBlogs } from "./reducers/blogReducer"
@@ -62,6 +63,9 @@ const App = () => {
         <br />
 
         <Switch>
+          <Route path="/users/:id">
+            <User />
+          </Route>
           <Route path="/users">
             <Users />
           </Route>
