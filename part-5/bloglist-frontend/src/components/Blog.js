@@ -7,12 +7,14 @@ const Blog = () => {
   const id = useParams().id
 
   const dispatch = useDispatch()
-  const loggedInUser = useSelector((state) => state.loggedInUser)
-  const blog = useSelector(({ blogs }) => blogs.find((blog) => blog.id === id))
 
   useEffect(() => {
     dispatch(initBlogs())
   }, [dispatch])
+
+  const loggedInUser = useSelector((state) => state.loggedInUser)
+  const blog = useSelector((state) => {
+    return state.blogs.find((blog) => blog.id === id)})
 
   const handleBlogDelete = async () => {
     if (!window.confirm(`Delete blog: ${blog.title}?`)) {
@@ -39,6 +41,7 @@ const Blog = () => {
           <button className="likeButton" onClick={ () => dispatch(likeBlog(blog)) }>Like</button>
         </div>
         <div>
+          {/* BUG Causes an error if user is deleted */}
           Added by: <Link to={`/users/${blog.user.id}`}>{blog.user.username}</Link>
         </div>
         { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }

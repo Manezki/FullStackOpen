@@ -60,10 +60,10 @@ describe("Blog app", function() {
         cy.get("#newblog-url").type("http://localhost:3000")
         cy.get("#newblog-submit").click()
 
-        cy.contains("testblog; by testuser")
+        cy.get(".blog").contains("testblog")
       })
 
-      it("user can like a blog", function() {
+      it("can navigate to a blog", function() {
         cy.createBlog({
           title: "testblog",
           author: "testuser",
@@ -71,9 +71,10 @@ describe("Blog app", function() {
         })
         cy.visit("http://localhost:3000")
 
-        cy.contains("testblog; by testuser").contains("View").click()
-        cy.contains("Likes: 0").contains("Like").click()
-        cy.contains("Likes: 1")
+        cy.get(".blog").contains("testblog").click()
+
+        cy.contains("testblog")
+        cy.contains("By: testuser")
       })
 
       it("user can delete a blog submitted by him", function() {
@@ -84,11 +85,11 @@ describe("Blog app", function() {
           url: "http://localhost:3000"
         })
         cy.visit("http://localhost:3000")
+        cy.get(".blog").contains("testblog").click()
 
-        cy.contains("testblog; by testuser").contains("View").click()
-        cy.contains("testblog; by testuser")
+        cy.contains("testblog")
           .get("#deleteButton").click()
-        cy.should("not.contain", "testblog; by testuser")
+        cy.should("not.contain", "testblog")
       })
 
       it("blogs are sorted by likes", function() {
@@ -106,28 +107,15 @@ describe("Blog app", function() {
         })
         cy.visit("http://localhost:3000")
 
-        cy.contains("testblog; by testuser")
-        cy.contains("testblog2; by testuser")
+        cy.get(".blog").contains("testblog")
+        cy.get(".blog").contains("testblog2")
 
         cy.get(".blog").then((blogs) => {
-          blogs.map((i, el) => {
-            cy.wrap(el).contains("View").click()
-          })
+          console.log(blogs)
+          cy.wrap(blogs[0]).should("contain", "testblog2")
+          cy.wrap(blogs[1]).should("contain", "testblog")
         })
-        cy.get(".blog").then((blogs) => {
-          let highLike = 99999
 
-          blogs.map((i, blog) => {
-            return cy.wrap(blog)
-              .contains("Likes: ")
-              .invoke("text")
-              .then((el) => {
-                const likes = Number(el.match(/(\d)/)[1])
-                cy.wrap(likes).should("be.lte", highLike)
-                highLike = likes
-              })
-          })
-        })
       })
     })
   })
