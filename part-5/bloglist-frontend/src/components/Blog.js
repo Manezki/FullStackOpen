@@ -41,10 +41,13 @@ const Blog = () => {
           <button className="likeButton" onClick={ () => dispatch(likeBlog(blog)) }>Like</button>
         </div>
         <div>
-          {/* BUG Causes an error if user is deleted */}
-          Added by: <Link to={`/users/${blog.user.id}`}>{blog.user.username}</Link>
+          Added by:
+          {(blog.user
+            ? <Link to={`/users/${blog.user.id}`}>{blog.user.username}</Link>
+            : " A deleted user"
+          )}
         </div>
-        { (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }
+        { (blog.user) && (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }
       </div>
     </div>
   )
