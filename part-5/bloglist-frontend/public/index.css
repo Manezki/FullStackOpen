@@ -25,7 +25,12 @@
     color: lightcoral;
 }
 
-.navBar .link {
+.navBar {
+    display: flex;
+    flex-direction: row;
+}
+
+.navBar .link, div {
     padding: 5px 5px 5px 5px;
 }
 

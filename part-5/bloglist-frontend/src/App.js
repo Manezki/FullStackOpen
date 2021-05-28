@@ -50,16 +50,16 @@ const App = () => {
       <div className="navBar">
         <Link className="link" to="/">Blogs</Link>
         <Link className="link" to="/users">Users</Link>
+        <div>
+          &lsquo;{loggedInUser.name}&lsquo; logged in
+          <button onClick={logout} style={{ marginLeft: 4 }}>Logout</button>
+        </div>
       </div>
       <div>
         <h2>blogs</h2>
         {(Object.keys(notification).length !== 0)
           ? <Notification type={notification.type} message={notification.message} />
           : null}
-        <div>
-          &lsquo;{loggedInUser.name}&lsquo; logged in
-          <button onClick={logout}>Logout</button>
-        </div>
         <br />
 
         <Switch>
