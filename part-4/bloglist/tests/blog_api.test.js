@@ -69,6 +69,44 @@ describe("/api/blogs", () => {
       expect(Object.keys(response.body[0])).not.toContain("_id")
       expect(Object.keys(response.body[0])).not.toContain("__v")
     })
+
+    test("returns populated blog comments", async () => {
+      const blogs = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const testBlog = blogs.body[0]
+
+      // Check that the test comment is not already contained
+      expect(testBlog.comments).not.toContain("Hello test")
+
+      await api
+        .post(`/api/blogs/${testBlog.id}/comments`)
+        .send({ text: "Hello test" })
+        .expect(201)
+
+      const updatedBlogs = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      const updatedTestBlog = updatedBlogs.body.find((blog) => blog.id === testBlog.id)
+
+      expect(updatedTestBlog.comments.map((comment) => comment.text)).toContain("Hello test")
+    })
+
+    test("returns username and name for the submitting user", async () => {
+      const blogs = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", new RegExp("application/json"))
+
+      blogs.body.map((blog) => blog.user).forEach((user) => {
+        expect(user.username).toBeDefined()
+        expect(user.name).toBeDefined()
+      })
+    })
   })
 
   describe("POST methods", () => {

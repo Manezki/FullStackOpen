@@ -7,7 +7,9 @@ const config = require("../utils/config")
 
 blogsRouter.get("/", async (request, response, next) => {
   try {
-    const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 })
+    const blogs = await Blog.find({}).populate(
+      [{ path: "user", select: "username name" }, { path: "comments", select: "text" }],
+    )
     response.json(blogs)
   } catch (error) {
     next(error)
@@ -104,6 +106,27 @@ blogsRouter.put("/:id", async (request, response, next) => {
 })
 
 blogsRouter.post("/:id/comments", async (request, response, next) => {
+  try {
+    const { id } = request.params
+
+    const blog = await Blog.findById(id)
+
+    const comment = new Comment({
+      text: request.body.text,
+    })
+
+    const createdComment = await comment.save()
+
+    blog.comments = blog.comments.concat([createdComment._id]) // eslint-disable-line
+
+    await blog.save()
+    response.status(201).json(createdComment)
+  } catch (error) {
+    next(error)
+  }
+})
+
+blogsRouter.get("/:id/comments", async (request, response, next) => {
   try {
     const { id } = request.params
 
