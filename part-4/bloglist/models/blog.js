@@ -19,6 +19,11 @@ const blogSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  comments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Comment",
+    required: false,
+  }],
 })
 
 blogSchema.index({ title: "text", author: "text" })

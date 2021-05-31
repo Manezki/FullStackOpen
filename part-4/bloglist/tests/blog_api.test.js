@@ -262,6 +262,39 @@ describe("/api/blogs", () => {
         .send(newBlog)
         .expect(400)
     })
+
+    describe("Commenting", () => {
+      test("Accepts a valid comment", async () => {
+        const newBlog = {
+          title: "Improve your remote work results by being smart",
+          author: "Manezki",
+          url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
+          likes: 42,
+        }
+
+        let testBlog = await api
+          .post("/api/blogs")
+          .set("Authorization", `bearer ${loggedInUser.token}`)
+          .send(newBlog)
+          .expect(201)
+          .expect("Content-Type", new RegExp("application/json"))
+        testBlog = testBlog.body
+
+        const comment = {
+          text: "Hello test",
+        }
+
+        await api
+          .post(`/api/blogs/${testBlog.id}/comments`)
+          .send(comment)
+          .expect(201)
+
+        const dbContent = await helper.blogsInDb()
+        const postCommentBlog = dbContent.find((blog) => blog.id === testBlog.id)
+
+        expect(postCommentBlog.comments).toHaveLength(testBlog.comments.length + 1)
+      })
+    })
   })
 
   describe("DELETE method", () => {

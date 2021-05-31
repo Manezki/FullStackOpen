@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken")
 const blogsRouter = require("express").Router()
 const Blog = require("../models/blog")
 const User = require("../models/user")
+const Comment = require("../models/comment")
 const config = require("../utils/config")
 
 blogsRouter.get("/", async (request, response, next) => {
@@ -46,6 +47,7 @@ blogsRouter.post("/", async (request, response, next) => {
 })
 
 blogsRouter.delete("/:id", async (request, response, next) => {
+  // Potential BUG: Blog reference might linger in users blogs after blog is deleted.
   const { id } = request.params
   const token = request.body.token ? request.body.token : ""
 
@@ -96,6 +98,27 @@ blogsRouter.put("/:id", async (request, response, next) => {
       ).populate("user", { username: 1, name: 1 })
       response.json(result)
     }
+  } catch (error) {
+    next(error)
+  }
+})
+
+blogsRouter.post("/:id/comments", async (request, response, next) => {
+  try {
+    const { id } = request.params
+
+    const blog = await Blog.findById(id)
+
+    const comment = new Comment({
+      text: request.body.text,
+    })
+
+    const createdComment = await comment.save()
+
+    blog.comments = blog.comments.concat([createdComment._id]) // eslint-disable-line
+
+    await blog.save()
+    response.status(201).json(createdComment)
   } catch (error) {
     next(error)
   }
