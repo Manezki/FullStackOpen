@@ -1,4 +1,5 @@
 import blogService from "../services/blogs"
+import commentService from "../services/comment"
 import { addNotification } from "./notificationReducer"
 
 const reducer = (state = [], action) => {
@@ -68,6 +69,28 @@ export const deleteBlog = (blog) => {
     } catch (error) {
       dispatch(addNotification(
         `Could not delete ${blog.title}, reason: ${error.message}`,
+        "error"
+      ))
+    }
+  }
+}
+
+export const commentBlog = (blog, commentText) => {
+  return async (dispatch) => {
+    try {
+
+      const comment = await commentService.create({ id: blog.id, text: commentText })
+
+      const updatedBlog = { ...blog, comments: [...blog.comments, comment] }
+
+      dispatch({
+        type: "UPDATE-BLOG",
+        blogID: blog.id,
+        updatedBlog: updatedBlog
+      })
+    } catch (error) {
+      dispatch(addNotification(
+        `Could not comment on ${blog.title}, reason: ${error.message}`,
         "error"
       ))
     }

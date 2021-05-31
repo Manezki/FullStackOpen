@@ -50,6 +50,7 @@ blogsRouter.post("/", async (request, response, next) => {
 
 blogsRouter.delete("/:id", async (request, response, next) => {
   // Potential BUG: Blog reference might linger in users blogs after blog is deleted.
+  // BUG: Deleting a blog does leave orphanated comments.
   const { id } = request.params
   const token = request.body.token ? request.body.token : ""
 
