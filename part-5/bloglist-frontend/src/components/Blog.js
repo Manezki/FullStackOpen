@@ -47,6 +47,12 @@ const Blog = () => {
             : " A deleted user"
           )}
         </div>
+        <div className="comments">
+          <h2>Comments</h2>
+          <ul>
+            {blog.comments.map((comment) => <li key={comment.id}>{ comment.text }</li>)}
+          </ul>
+        </div>
         { (blog.user) && (loggedInUser.id === blog.user.id) && <button id="deleteButton" onClick={ () => handleBlogDelete()}>Delete</button> }
       </div>
     </div>

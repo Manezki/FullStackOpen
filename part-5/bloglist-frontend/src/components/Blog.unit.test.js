@@ -9,7 +9,8 @@ const testBlog = {
   url: "http://www.localhost:3000",
   likes: 1,
   id: "abc123",
-  user: "12345"
+  user: "12345",
+  comments: []
 }
 
 describe("<Blog />", () => {
@@ -41,20 +42,29 @@ describe("<Blog />", () => {
         component.container
       ).toHaveTextContent("1")
     })
+
+    test("displays comments", () => {
+      component = render(
+        <Blog />,
+        { initialState: { blogs: [{ ...testBlog, comments: [{ id: "a234", text: "Hello test" }] }] },
+          initialHistory: [`/blogs/${testBlog.id}`], routePath: "/blogs/:id" }
+      )
+
+      expect(
+        component.container.getElementsByClassName("comments")
+      ).toBeDefined()
+
+      expect(
+        component.container.getElementsByClassName("comments")[0]
+      ).toHaveTextContent("Hello test")
+    })
   })
 
   describe("Recovers", () => {
 
     test("when user that created the post is deleted", () => {
 
-      const userDeletedResponse = {
-        title: "The king",
-        author: "Manezki",
-        url: "http://www.localhost:3000",
-        likes: 1,
-        id: "abc123",
-        user: null
-      }
+      const userDeletedResponse = { ...testBlog, user: null }
 
       const { queryByText } = render(
         <Blog />,
