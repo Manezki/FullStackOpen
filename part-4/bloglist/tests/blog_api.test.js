@@ -131,8 +131,10 @@ describe("/api/blogs", () => {
         .expect("Content-Type", new RegExp("application/json"))
 
       let dbContent = await helper.blogsInDb()
-      // Drop user and id from the returned content
-      dbContent = dbContent.map(({ id, user, ...blog }) => blog)
+      // Drop unnessery attributes
+      dbContent = dbContent.map(({ title, author, url, likes }) => { // eslint-disable-line
+        return { title, author, url, likes } // eslint-disable-line
+      }) // eslint-disable-line
 
       expect(dbContent).toContainEqual(newBlog)
     })
@@ -144,19 +146,14 @@ describe("/api/blogs", () => {
         url: "https://medium.com/@manezki/enjoy-life-to-the-fullest-remote-efficiently-78af5e48f865?sk=8ade2d067af850fafe2a94cf03c23fac",
       }
 
-      await api
+      const createdBlog = await api
         .post("/api/blogs")
         .set("Authorization", `bearer ${loggedInUser.token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", new RegExp("application/json"))
 
-      let dbContent = await helper.blogsInDb()
-      dbContent = dbContent.map(({ id, user, ...blog }) => blog)
-
-      newBlog.likes = 0
-
-      expect(dbContent).toContainEqual(newBlog)
+      expect(createdBlog.body.likes).toEqual(0)
     })
 
     test("new blogs have a creating user set", async () => {
