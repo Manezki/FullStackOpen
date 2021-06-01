@@ -81,6 +81,8 @@ describe("/api/blogs", () => {
       // Check that the test comment is not already contained
       expect(testBlog.comments).not.toContain("Hello test")
 
+      // Bug: Comments generated in the tests are never deleted,.
+      // The comments become orphanated in the database
       await api
         .post(`/api/blogs/${testBlog.id}/comments`)
         .send({ text: "Hello test" })
@@ -322,6 +324,8 @@ describe("/api/blogs", () => {
           text: "Hello test",
         }
 
+        // Bug: Comments generated in the tests are never deleted,.
+        // The comments become orphanated in the database
         await api
           .post(`/api/blogs/${testBlog.id}/comments`)
           .send(comment)

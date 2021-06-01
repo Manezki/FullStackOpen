@@ -43,6 +43,8 @@ const Blog = () => {
           Url: <a href={blog.url}>{blog.url}</a>
         </div>
         <div>
+          {/* BUG: Liking a blog causes the comments vanish.
+            Recreate: Navigate to a blog with comments. Like the blog.*/}
           Likes: {blog.likes}
           <button className="likeButton" onClick={ () => dispatch(likeBlog(blog)) }>Like</button>
         </div>
