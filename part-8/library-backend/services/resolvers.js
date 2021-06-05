@@ -12,8 +12,8 @@ const resolvers = {
     allBooks: (root, args) => {
       try {
         const filteredByGenre = (args.genre)
-          ? Book.find({ genres: { $in: [args.genre] } })
-          : Book.find({})
+          ? Book.find({ genres: { $in: [args.genre] } }).populate("author")
+          : Book.find({}).populate("author")
 
         return filteredByGenre
       } catch (error) {

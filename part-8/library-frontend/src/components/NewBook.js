@@ -22,6 +22,7 @@ const NewBook = (props) => {
 
     createBook({
       variables: { title, author, published: Number(published), genres },
+      // Could be carried out with manual update
       refetchQueries: [ { query: ALL_BOOKS }, { query: ALL_AUTHORS } ]
     })
 

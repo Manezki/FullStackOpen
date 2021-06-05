@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 import { useLazyQuery, useMutation } from "@apollo/client"
 
@@ -17,6 +17,12 @@ const SetBirthYear = () => {
     }
     getAuthors()
   }
+
+  useEffect(() => {
+    if (result.data) {
+      setAuthor(result.data.allAuthors[0].name)
+    }
+  }, [result.data])
 
   const submit = async (event) => {
     event.preventDefault()
@@ -47,7 +53,7 @@ const SetBirthYear = () => {
               ? result.data.allAuthors.map((author) => {
                 return <option value={author.name} key={author.id}>{author.name}</option>
               })
-              : <option value={"empty"}>--Select an author--</option>
+              : <option>--Select an author--</option>
             }
           </select>
           {/* <input
