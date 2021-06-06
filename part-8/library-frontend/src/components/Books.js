@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react"
 
-import { useQuery, useLazyQuery } from "@apollo/client"
+import { useQuery, useLazyQuery, useSubscription } from "@apollo/client"
 
-import { ALL_BOOKS } from "../queries"
+import { ALL_BOOKS, BOOK_ADDED } from "../queries"
 
 const Books = (props) => {
 
@@ -11,6 +11,14 @@ const Books = (props) => {
 
   const { loading, data } = useQuery(ALL_BOOKS)
   const [ getAllBooks, { data: genredBooksData}] = useLazyQuery(ALL_BOOKS)
+  useSubscription( BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const addedBook = subscriptionData.data.bookAdded
+      if (addedBook && (!genreFilter || addedBook.genres.includes(genreFilter))) {
+        setDisplayBooks(displayBooks.concat(addedBook))
+      }
+    }
+  } )
 
   useEffect(() => {
       getAllBooks({

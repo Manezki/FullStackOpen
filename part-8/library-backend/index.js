@@ -1,70 +1,13 @@
 require("dotenv").config()
 
-const { ApolloServer, gql } = require("apollo-server")
+const { ApolloServer } = require("apollo-server")
 const jwt = require("jsonwebtoken")
 const mongoose = require("mongoose")
 
 const resolvers = require("./services/resolvers")
+const typeDefs = require("./services/typeDefs")
 const User = require("./models/user")
-
-const typeDefs = gql`
-  type User {
-    username: String!
-    favoriteGenre: String!
-    id: ID!
-  }
-
-  type Token {
-    value: String!
-  }
-
-  type Book {
-    title: String!
-    published: Int!
-    author: Author!
-    genres: [String!]!
-    id: ID!
-  }
-
-  type Author {
-    name: String!
-    id: ID!
-    born: Int
-    bookCount: Int!
-  }
-
-  type Query {
-    bookCount: Int!
-    authorCount: Int!
-    allBooks(author: String, genre: String): [Book!]
-    allAuthors: [Author!]
-    me: User
-  }
-
-  type Mutation {
-    addBook(
-      title: String!
-      author: String!
-      published: Int!
-      genres: [String!]!
-    ): Book
-    
-    editAuthor(
-      name: String!
-      setBornTo: Int!
-    ): Author
-
-    createUser(
-      username: String!
-      favoriteGenre: String!
-    ): User
-
-    login(
-      username: String!
-      password: String!
-    ): Token  
-  }
-`
+const bookLoader = require("./services/loaders")
 
 mongoose.connect(
   process.env.MONGODB_URI,
@@ -92,12 +35,13 @@ const server = new ApolloServer({
 
       const currentUser = await User.findById(decodedToken.id)
 
-      return { currentUser }
+      return { currentUser, loaders: { bookLoader } }
     }
     return {}
   },
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })

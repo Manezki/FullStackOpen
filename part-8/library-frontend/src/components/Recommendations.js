@@ -21,7 +21,8 @@ const Recommendations = (props) => {
           store.writeQuery({
             query: ALL_BOOKS,
             data: {
-              ...stored.map((book) => {
+              ...stored,
+              allBooks: stored.allBooks.map((book) => {
                 const maybeRet = fetched.find((updatedBook) => updatedBook.id === book.id)
                 return (maybeRet) ? maybeRet : book
               })
