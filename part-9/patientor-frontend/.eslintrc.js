@@ -1,4 +1,4 @@
-{
+module.exports = {
   "extends": [
       "eslint:recommended",
       "plugin:@typescript-eslint/recommended",
@@ -28,8 +28,14 @@
       "version": "detect"
     }
   },
+  "overrides": [
+    {
+      "files": ['*.ts', '*.tsx'], // Your TypeScript files extension
+      "parserOptions": {
+        "project": ['./tsconfig.json'], // Specify it only for TypeScript files
+        "tsconfigRootDir": __dirname,
+      },
+    }
+  ],
   "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  }
 }

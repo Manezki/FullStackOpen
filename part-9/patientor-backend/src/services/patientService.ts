@@ -1,10 +1,15 @@
 import patientData from '../../data/patients';
-import { Patient } from '../types';
+import { Patient, PublicPatient } from '../types';
 
-const getEntries = (): Array<Omit<Patient, "ssn">> => {
-  return patientData.map(({ ssn, ...patient }) => patient);
+const getPublicEntries = (): Array<PublicPatient> => {
+  return patientData.map(({ ssn: _ssn, entries: _entries, ...patient }) => patient);
+};
+
+const getPrivateEntry = (id: string): Patient | undefined => {
+  return patientData.find((patient) => patient.id === id);
 };
 
 export default {
-  getEntries
+  getPublicEntries,
+  getPrivateEntry
 };
