@@ -1,16 +1,21 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { Container, Icon, Table } from "semantic-ui-react";
+import { Button, Container, Icon, Table } from "semantic-ui-react";
 
-import { Diagnosis, Patient } from "../types";
+import { Diagnosis, Entry, Patient } from "../types";
 import { apiBaseUrl } from "../constants";
 import { updatePatient, setDiagnosesList, useStateValue } from "../state";
 import { useParams } from "react-router";
 import HealthRatingBar from "../components/HealthRatingBar";
 import EntryView from "./EntryView";
+import AddEntryModal from "../AddEntryModal";
+import { EntryFormValues } from "../AddEntryModal/AddEntryForm";
 
 const PatientListPage = () => {
   const { id } = useParams<{ id: string }>();
+
+  const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | undefined>();
 
   const [{ patients, diagnoses }, dispatch] = useStateValue();
   const patient: Patient | undefined = Object.values(patients).find((patient) => patient.id === id);
@@ -53,6 +58,13 @@ const PatientListPage = () => {
     void fetchDiagnoses();
   }, []);
 
+  const openModal = (): void => setModalOpen(true);
+
+  const closeModal = (): void => {
+    setModalOpen(false);
+    setError(undefined);
+  };
+
   // console.log(patient);
   // console.log(diagnoses);
 
@@ -63,6 +75,22 @@ const PatientListPage = () => {
       </Container>
     </div>);
   }
+
+  const submitNewEntry= async (values: EntryFormValues) => {
+    try {
+      const { data: newEntry } = await axios.post<Entry>(
+        `${apiBaseUrl}/patients/${id}/entries`,
+        values
+      );
+      // Update patient
+      const updatedPatient = {...patient, entries: patient.entries?.concat(newEntry)};
+      dispatch(updatePatient(updatedPatient));
+      closeModal();
+    } catch (e) {
+      console.error(e.response?.data || 'Unknown Error');
+      setError(e.response?.data?.error || 'Unknown error');
+    }
+  };
 
   const generateRowId = (rowContent: string): string => {
     return `patient.id+${rowContent}`;
@@ -102,11 +130,20 @@ const PatientListPage = () => {
       <Container textAlign="center">
         <h2>Patient entries</h2>
       </Container>
+      <div>
       {(patient.entries)
         ? patient.entries.map((entry) => {
-            return <EntryView key={entry.id} entry={entry}/>;
-          })
+          return <EntryView key={entry.id} entry={entry}/>;
+        })
         : "Loading..."}
+      </div>
+      <AddEntryModal
+        modalOpen={modalOpen}
+        onSubmit={submitNewEntry}
+        error={error}
+        onClose={closeModal}
+      />
+      <Button onClick={() => openModal()}>Add New Patient Entry</Button>
     </div>
   );
 };
