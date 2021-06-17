@@ -1,0 +1,6 @@
+[submodule "part-11/part-11/pokedex"]
+	path = part-11/part-11/pokedex
+	url = git@github.com:Manezki/full-stack-open-pokedex.git
+[submodule "part-11/pokedex"]
+	path = part-11/pokedex
+	url = git@github.com:Manezki/full-stack-open-pokedex.git
